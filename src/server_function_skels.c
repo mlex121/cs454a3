@@ -3,33 +3,34 @@
 #include <string.h>
 
 int f0_Skel(int *argTypes, void **args) {
-
-  *(int *)args[0] = f0(*(int *)args[1], *(int *)args[2]);
-  return 0;
+    *(int *)args[0] = f0(*(int *)args[1], *(int *)args[2]);
+    return 0;
 }
 
 int f1_Skel(int *argTypes, void **args) {
 
-  *((long *)*args) = f1( *((char *)(*(args + 1))), 
-		        *((short *)(*(args + 2))),
-		        *((int *)(*(args + 3))),
-		        *((long *)(*(args + 4))) );
+    *((long *)*args) = f1(
+        *((char *)(*(args + 1))), 
+        *((short *)(*(args + 2))),
+        *((int *)(*(args + 3))),
+        *((long *)(*(args + 4)))
+    );
 
-  return 0;
+    return 0;
 }
 
 int f2_Skel(int *argTypes, void **args) {
 
-  /* (char *)*args = f2( *((float *)(*(args + 1))), *((double *)(*(args + 2))) ); */
-  *args = f2( *((float *)(*(args + 1))), *((double *)(*(args + 2))) );
+    // (char *)*args = f2( *((float *)(*(args + 1))), *((double *)(*(args + 2))) ); */
+    *args = f2( *((float *)(*(args + 1))), *((double *)(*(args + 2))) );
 
-  return 0;
+    return 0;
 }
 
 int f3_Skel(int *argTypes, void **args) {
 
-  f3((long *)(*args));
-  return 0;
+    f3((long *)(*args));
+    return 0;
 }
 
 /* 
@@ -39,6 +40,6 @@ int f3_Skel(int *argTypes, void **args) {
  */
 int f4_Skel(int *argTypes, void **args) {
 
-  return -1; /* can not print the file */
+    return -1; // can not print the file 
 }
 
