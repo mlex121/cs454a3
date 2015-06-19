@@ -1,15 +1,9 @@
-/*
- * client.c
- * 
- * This file is the client program, 
- * which prepares the arguments, calls "rpcCall", and checks the returns.
- */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "rpc.h"
+#include "../include/rpc.h"
 
 #define CHAR_ARRAY_LENGTH 100
 
@@ -87,7 +81,7 @@ int main() {
   args3 = (void **)malloc(count3 * sizeof(void *));
   args3[0] = (void *)a3;
 
-  /* prepare the arguments for f4 */
+  /* prepare the arguements for f4 */
   char *a4 = "non_exist_file_to_be_printed";
   int count4 = 1;
   int argTypes4[count4 + 1];
@@ -158,9 +152,11 @@ int main() {
   printf("\nACTUAL return of f4: %d\n", s4);
 
   /* rpcTerminate */
+  /*
   printf("\ndo you want to terminate? y/n: ");
   if (getchar() == 'y')
     rpcTerminate();
+  */
 
   /* end of client.c */
   return 0;
