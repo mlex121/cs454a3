@@ -1,36 +1,47 @@
 .SUFFIXES:
 
 CXX := g++
-CXXFLAGS := -std=c++11
+CXXFLAGS := -L. -std=c++11
 
 debug: CXXFLAGS += -DDEBUG -g -O0
 
+AR := ar
+ARFLAGS := rcsu
+
 OBJDIR := obj
 SRCDIR := src
+INCLUDEDIR := include
+LIBDIR := lib
 
 MKDIR_P = mkdir -p
 
-SERVER := stringServer
-SERVER_SRC := stringServer.cpp
-SERVER_DEP := stringServer.h
-SERVER_LIBS :=
+SERVER := server
+SERVER_SRC := server.cpp
+SERVER_DEP := server.h
+SERVER_LIBS := -lrpc
 
-CLIENT := stringClient
-CLIENT_SRC := stringClient.cpp
-CLIENT_DEP := stringClient.h
-CLIENT_LIBS :=
+BINDER := binder
+BINDER_SRC := binder.cpp
+BINDER_DEP := binder.h
+BINDER_LIBS := -lrpc
 
-SHARED_SRC := utils.cpp
-SHARED_DEP := utils.h
-SHARED_LIBS :=
+CLIENT := client
+CLIENT_SRC := client.cpp
+CLIENT_DEP := client.h
+CLIENT_LIBS := -lrpc
+
+LIBRPC := $(LIBDIR)/librpc.a
+LIBRPC_SRC := rpc.cpp
+LIBRPC_DEP := rpc.h rpc_private.h
+LIBRPC_LIBS :=
 
 SERVER_OBJ := $(patsubst %.cpp,$(OBJDIR)/%.o,$(SERVER_SRC))
-CLIENT_OBJ := $(patsubst %.cpp,$(OBJDIR)/%.o,$(CLIENT_SRC))
-SHARED_OBJ := $(patsubst %.cpp,$(OBJDIR)/%.o,$(SHARED_SRC))
+BINDER_OBJ := $(patsubst %.cpp,$(OBJDIR)/%.o,$(BINDER_SRC))
+LIBRPC_OBJ := $(patsubst %.cpp,$(OBJDIR)/%.o,$(LIBRPC_SRC))
 
-.PHONY: all directories clean nuke
+.PHONY: all directories clean
 
-all: directories $(SERVER) $(CLIENT)
+all: directories $(SERVER) $(BINDER)
 
 debug: all
 
@@ -42,11 +53,20 @@ $(SRCDIR):
 $(OBJDIR):
 	$(MKDIR_P) $(OBJDIR)
 
-$(SERVER): $(SERVER_OBJ) $(SHARED_OBJ)
-	$(CXX) -o $@ $^ $(SERVER_LIBS)
+$(INCLUDEDIR):
+	$(MKDIR_P) $(INCLUDEDIR)
 
-$(CLIENT): $(CLIENT_OBJ) $(SHARED_OBJ)
-	$(CXX) -o $@ $^ $(CLIENT_LIBS)
+$(LIBDIR):
+	$(MKDIR_P) $(LIBDIR)
+
+$(SERVER): $(SERVER_OBJ) $(SHARED_OBJ)
+	$(CXX) -L. -o $@ $^ $(SERVER_LIBS)
+
+$(CLIENT): $(CLIENT_OBJ) $(LIB)
+	$(CXX) -L. -o $@ $^ $(CLIENT_LIBS)
+
+$(LIBRPC): $(LIBRPC_OBJ)
+	$(AR) $(ARFLAGS) $(LIBRPC) $(LIBRPC_OBJ)
 
 clean:
 	rm -rf $(OBJDIR) $(SERVER) $(CLIENT)
