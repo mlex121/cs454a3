@@ -1,7 +1,7 @@
 .SUFFIXES:
 
 CXX := g++
-CXXFLAGS := -L. -std=c++11
+CXXFLAGS := -L./lib -I./include -std=c++11
 
 debug: CXXFLAGS += -DDEBUG -g -O0
 
@@ -35,6 +35,11 @@ LIBRPC_SRC := rpc.cpp
 LIBRPC_DEP := rpc.h rpc_private.h
 LIBRPC_LIBS :=
 
+
+
+
+SHARED_OBJ := libp.a
+
 SERVER_OBJ := $(patsubst %.cpp,$(OBJDIR)/%.o,$(SERVER_SRC))
 BINDER_OBJ := $(patsubst %.cpp,$(OBJDIR)/%.o,$(BINDER_SRC))
 LIBRPC_OBJ := $(patsubst %.cpp,$(OBJDIR)/%.o,$(LIBRPC_SRC))
@@ -50,6 +55,9 @@ directories: $(SRCDIR) $(OBJDIR)
 $(SRCDIR):
 	$(MKDIR_P) $(SRCDIR)
 
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
+	    $(CXX) $(CXXFLAGS) $< -c -o $@
+
 $(OBJDIR):
 	$(MKDIR_P) $(OBJDIR)
 
@@ -59,14 +67,16 @@ $(INCLUDEDIR):
 $(LIBDIR):
 	$(MKDIR_P) $(LIBDIR)
 
-$(SERVER): $(SERVER_OBJ) $(SHARED_OBJ)
-	$(CXX) -L. -o $@ $^ $(SERVER_LIBS)
+$(SERVER): $(SERVER_OBJ) $(LIBRPC)
+	$(CXX) $(CXXFLAGS) $(SERVER_LIBS) -o $@ $^ 
 
-$(CLIENT): $(CLIENT_OBJ) $(LIB)
-	$(CXX) -L. -o $@ $^ $(CLIENT_LIBS)
 
 $(LIBRPC): $(LIBRPC_OBJ)
 	$(AR) $(ARFLAGS) $(LIBRPC) $(LIBRPC_OBJ)
+
+#Untested below this line
+$(CLIENT): $(CLIENT_OBJ) $(LIB)
+	$(CXX) -L. -o $@ $^ $(CLIENT_LIBS)
 
 clean:
 	rm -rf $(OBJDIR) $(SERVER) $(CLIENT)
