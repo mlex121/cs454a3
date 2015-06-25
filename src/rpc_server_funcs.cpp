@@ -15,7 +15,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "../include/rpc.h"
+#include "rpc.h"
 
 #define MAX_DATA_LEN 576 - 4 - 1
 struct message {

@@ -13,7 +13,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "../include/rpc.h"
+#include "rpc.h"
 
 using namespace std;
 
