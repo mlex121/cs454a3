@@ -16,12 +16,14 @@
 #include <unistd.h>
 
 #include "rpc.h"
+#include "common_defs.h"
+
+enum SERVER_ERRORS {
+  BINDER_NOT_FOUND,
+  UNITIALIZED_BINDER_NETWORK_HANDLER
+};
 
 #define MAX_DATA_LEN 576 - 4 - 1
-struct message {
-  int length;
-  char s[MAX_DATA_LEN];
-};
 
 void *get_in_addr(struct sockaddr *sa)
 {
@@ -34,26 +36,28 @@ void *get_in_addr(struct sockaddr *sa)
 
 using namespace std;
 
-class ClientNetworkHandler {
-  int sock_fd;
+class BinderNetworkHandler {
+    int sock_fd;
 
-  list<string> client_data;
+    list<string> client_data;
 
-  sem_t read_avail;
-  sem_t write_avail;
+    sem_t read_avail;
+    sem_t write_avail;
 
-  struct addrinfo hints, *servinfo, *p;
-  int rv;
-  char remoteIP[INET6_ADDRSTRLEN];
+    struct addrinfo hints, *servinfo, *p;
+    int rv;
+    char remoteIP[INET6_ADDRSTRLEN];
 
-  public:
-    ClientNetworkHandler();
-    void run();
-    static void *dispatch(void *arg);
+    public:
+        BinderNetworkHandler();
+        int rpcRegister(char *name, int *argTypes, skeleton f);
+        void run();
+        static void *dispatch(void *arg);
 };
 
-void* ClientNetworkHandler::dispatch(void *arg) {
-  ClientNetworkHandler *c = (ClientNetworkHandler *)arg;
+/*
+void* BinderNetworkHandler::dispatch(void *arg) {
+  BinderNetworkHandler *c = (BinderNetworkHandler *)arg;
 
   int size;  
   char buf[MAX_DATA_LEN];
@@ -90,82 +94,111 @@ void* ClientNetworkHandler::dispatch(void *arg) {
 
   pthread_exit(0);
 }
+*/
 
-ClientNetworkHandler::ClientNetworkHandler() {
-  char *hostname  = getenv("SERVER_ADDRESS");
-  char *port      = getenv("SERVER_PORT");
+BinderNetworkHandler::BinderNetworkHandler() {
+    char *hostname    = getenv("SERVER_ADDRESS");
+    char *port        = getenv("SERVER_PORT");
 
-  memset(&hints, 0, sizeof hints);
-  hints.ai_family = AF_UNSPEC;
-  hints.ai_socktype = SOCK_STREAM;
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
 
-  if ((rv = getaddrinfo(hostname, port, &hints, &servinfo)) != 0) {
-      cerr << "getaddrinfo: " << gai_strerror(rv) << endl;
-      exit(1);
-  }
-
-  // loop through all the results and connect to the first we can
-  for(p = servinfo; p != NULL; p = p->ai_next) {
-      sock_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
-      if (sock_fd == -1) {
-          perror("client: socket");
-          continue;
-      }
-
-      if (connect(sock_fd, p->ai_addr, p->ai_addrlen) == -1) {
-          close(sock_fd);
-          perror("client: connect");
-          continue;
-      }
-
-      break;
-  }
-
-  if (p == NULL) {
-      cerr << "client: failed to connect" << endl;
-      exit(1);
-  }
-
-  inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
-          remoteIP, sizeof(remoteIP));
-  printf("client: connected to %s on port %s\n", remoteIP, port);
-
-  freeaddrinfo(servinfo); // all done with this structure
-
-  sem_init(&read_avail, 0, 0);
-  sem_init(&write_avail, 0, 1);
-}
-
-void ClientNetworkHandler::run() {
-  pthread_t worker;
-  string s;
-
-  int ret = pthread_create(&worker, NULL, &ClientNetworkHandler::dispatch, (void *)(this));
-  if (ret) {
-    cout << "Error: Unable to spawn worker thread." << endl;
-  }
-
-  cout << "Working" << endl;
-
-  while (getline(cin, s)) {
-    if (s.length()) {
-      sem_wait(&write_avail);
-      client_data.push_back(s);
-      sem_post(&read_avail);
+    if ((rv = getaddrinfo(hostname, port, &hints, &servinfo)) != 0) {
+        cerr << "getaddrinfo: " << gai_strerror(rv) << endl;
+        exit(1);
     }
-  }
+
+    // loop through all the results and connect to the first we can
+    for(p = servinfo; p != NULL; p = p->ai_next) {
+        sock_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+        if (sock_fd == -1) {
+            continue;
+        }
+
+        if (connect(sock_fd, p->ai_addr, p->ai_addrlen) == -1) {
+            close(sock_fd);
+            continue;
+        }
+
+        break;
+    }
+
+    if (p == NULL) {
+        cerr << "client: failed to connect" << endl;
+        throw BINDER_NOT_FOUND;
+    }
+
+    inet_ntop(
+        p->ai_family,
+        get_in_addr((struct sockaddr *)p->ai_addr),
+        remoteIP,
+        sizeof(remoteIP)
+    );
+
+    cout << "client: connected to " << remoteIP << " on port " << port << endl;
+
+    freeaddrinfo(servinfo);
+
+    sem_init(&read_avail, 0, 0);
+    sem_init(&write_avail, 0, 1);
 }
 
-ClientNetworkHandler c;
+void BinderNetworkHandler::run() {
+    pthread_t worker;
+    string s;
+
+    /*
+    int ret = pthread_create(&worker, NULL, &BinderNetworkHandler::dispatch, (void *)(this));
+    if (ret) {
+        cout << "Error: Unable to spawn worker thread." << endl;
+    }
+    */
+
+    cout << "Working" << endl;
+
+    while (getline(cin, s)) {
+        if (s.length()) {
+            sem_wait(&write_avail);
+            client_data.push_back(s);
+            sem_post(&read_avail);
+        }
+    }
+}
+
+int BinderNetworkHandler::rpcRegister(char *name, int *argTypes, skeleton f) {
+    unsigned int argTypes_len = get_argtypes_len(argTypes);
+
+    cout << "Argtypes length is: " << argTypes_len << endl;
+    cout << "Arg length is: " << get_args_len(argTypes) << endl;
+}
+
+BinderNetworkHandler *b = NULL;
 
 int rpcInit() {
-  return 0;
+    if (b == NULL) {
+        try {
+            b = new BinderNetworkHandler();
+        }
+        catch (SERVER_ERRORS e) {
+            return e;
+        }
+    }
+    else {
+      cerr << "rpcInit called more than once" << endl;
+    }
+
+    return 0;
 }
 
 int rpcRegister(char* name, int* argTypes, skeleton f) {
-  return 0;
+    if (b == NULL) {
+      throw UNITIALIZED_BINDER_NETWORK_HANDLER;
+    }
+
+    return b->rpcRegister(name, argTypes, f);
 }
 
 int rpcExecute() {
-  return 0;
+    return 0;
 }

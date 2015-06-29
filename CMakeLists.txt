@@ -13,12 +13,24 @@ SET(CMAKE_CXX_FLAGS "-std=c++0x")
 #Set the Include dir
 include_directories(include)
 
-add_library(rpc src/rpc_client_funcs.cpp src/rpc_server_funcs.cpp )
-# Add the threading library to the rpc library
+#Get threading
 find_package (Threads)
-TARGET_LINK_LIBRARIES(rpc ${CMAKE_THREAD_LIBS_INIT})
 
-add_executable(binder src/binder.cpp)
-add_executable(server src/server.c src/server_function_skels.c src/server_functions.c)
+# Libraries
+# -----------------------------
+    add_library(rpc src/rpc_client_funcs.cpp src/rpc_server_funcs.cpp src/common_defs.cpp )
+    add_library(receiver src/receiver.cpp )
 
-TARGET_LINK_LIBRARIES(server rpc)
+    TARGET_LINK_LIBRARIES(rpc ${CMAKE_THREAD_LIBS_INIT})
+    TARGET_LINK_LIBRARIES(receiver ${CMAKE_THREAD_LIBS_INIT})
+# -----------------------------
+
+
+#Binaries
+# -----------------------------
+    add_executable(binder src/binder.cpp)
+    add_executable(server src/server.c src/server_function_skels.c src/server_functions.c)
+
+    TARGET_LINK_LIBRARIES(binder rpc receiver)
+    TARGET_LINK_LIBRARIES(server rpc)
+# -----------------------------
