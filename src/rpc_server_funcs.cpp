@@ -2,6 +2,7 @@
 #include <list>
 
 #include <arpa/inet.h>
+#include <assert.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <pthread.h>
@@ -22,8 +23,6 @@ enum SERVER_ERRORS {
   BINDER_NOT_FOUND,
   UNITIALIZED_BINDER_NETWORK_HANDLER
 };
-
-#define MAX_DATA_LEN 576 - 4 - 1
 
 void *get_in_addr(struct sockaddr *sa)
 {
@@ -47,6 +46,9 @@ class BinderNetworkHandler {
     struct addrinfo hints, *servinfo, *p;
     int rv;
     char remoteIP[INET6_ADDRSTRLEN];
+
+    char *hostname;
+    char *port;
 
     public:
         BinderNetworkHandler();
@@ -97,8 +99,8 @@ void* BinderNetworkHandler::dispatch(void *arg) {
 */
 
 BinderNetworkHandler::BinderNetworkHandler() {
-    char *hostname    = getenv("SERVER_ADDRESS");
-    char *port        = getenv("SERVER_PORT");
+    hostname    = getenv("SERVER_ADDRESS");
+    port        = getenv("SERVER_PORT");
 
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
@@ -129,6 +131,7 @@ BinderNetworkHandler::BinderNetworkHandler() {
         throw BINDER_NOT_FOUND;
     }
 
+    /*
     inet_ntop(
         p->ai_family,
         get_in_addr((struct sockaddr *)p->ai_addr),
@@ -137,6 +140,7 @@ BinderNetworkHandler::BinderNetworkHandler() {
     );
 
     cout << "client: connected to " << remoteIP << " on port " << port << endl;
+    */
 
     freeaddrinfo(servinfo);
 
@@ -166,11 +170,70 @@ void BinderNetworkHandler::run() {
     }
 }
 
+message* get_register_request(char *hostname, char *port, char *name, int *argTypes) {
+    message *m = new message;
+
+    unsigned int argTypes_len_in_chars = get_argtypes_len(argTypes) * sizeof(*argTypes);
+
+    int message_len = (
+        METADATA_LEN +
+        MAX_HOSTNAME_LEN +
+        MAX_PORT_LEN +
+        MAX_FUNCTION_NAME_LEN +
+        argTypes_len_in_chars
+    );
+
+    //m->length = message_len;
+    //m->type = REGISTER;
+    
+    m->buf = new char[message_len];
+
+    ((int *)m->buf)[0] = message_len;
+    ((int *)m->buf)[1] = REGISTER;
+
+
+    unsigned int offset  = METADATA_LEN;
+
+    strncpy(m->buf + offset, hostname, MAX_HOSTNAME_LEN);
+    offset += MAX_HOSTNAME_LEN;
+
+    strncpy(m->buf + offset, port, MAX_PORT_LEN);
+    offset += MAX_PORT_LEN;
+
+    strncpy(m->buf + offset, name, MAX_FUNCTION_NAME_LEN);
+    offset += MAX_FUNCTION_NAME_LEN;
+
+    strncpy(m->buf + offset, (char *)argTypes, argTypes_len_in_chars);
+    offset += argTypes_len_in_chars;
+
+    assert(message_len == offset);
+
+    return m;
+}
+
 int BinderNetworkHandler::rpcRegister(char *name, int *argTypes, skeleton f) {
     unsigned int argTypes_len = get_argtypes_len(argTypes);
 
-    cout << "Argtypes length is: " << argTypes_len << endl;
-    cout << "Arg length is: " << get_args_len(argTypes) << endl;
+
+    message *m = get_register_request(hostname, port, name, argTypes);
+
+    //cout << "Arg length is: " << get_args_len(argTypes) << endl;
+    //cout << "Message hostname is: " << m->buf + 8 << endl;
+    cout << "Message length is: " << *((int *)m->buf) << endl;
+    
+    //Send data to server
+    // FIXME do this in a loop
+    if (send(sock_fd, m->buf, *((int *)m->buf), 0) == -1) {
+        perror("send");
+    }
+
+    /*
+    //Receive server reply
+    if ((size = recv(c->sock_fd, buf, MAX_DATA_LEN, 0)) == -1) {
+        perror("recv");
+        exit(1);
+    }
+    */
 }
 
 BinderNetworkHandler *b = NULL;

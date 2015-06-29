@@ -43,11 +43,10 @@ void socket_setup(int &sock, struct sockaddr_in &addr) {
 
 }
 
-NetworkReceiver::NetworkReceiver() {
-    sock_len =                    sizeof(struct sockaddr);
-    sender_sock_len =    sizeof(struct sockaddr_storage);
 
-    m = new message;
+NetworkReceiver::NetworkReceiver() {
+    sock_len =           sizeof(struct sockaddr);
+    sender_sock_len =    sizeof(struct sockaddr_storage);
 
     //Setup a socket, and bind our address to it
     socket_setup(listen_fd, receiver_addr);
@@ -97,6 +96,83 @@ void NetworkReceiver::run() {
     }
 }
 
+void NetworkReceiver::cleanup_fd(int fd) {
+    //Remove client from the master fd list
+    close(fd);
+    FD_CLR(fd, &master_fds);
+
+    // Remove the client from the received_messages buffer
+    // and free and data in that buffer
+    // FIXME implement this
+}
+
+int NetworkReceiver::safe_receive(int fd, char *buf, int len, int &size) {
+    // Error or connection closed by client
+    if ((size = recv(fd, buf, len, 0)) <= 0) {
+
+        if (size == 0) {
+            //cout << "Socket " << fd << " hung up." << endl;
+        }
+
+        cleanup_fd(fd);
+        return 0;
+    }
+    else {
+        return 1;
+    }
+}
+
+void NetworkReceiver::handle_client_data(int fd) {
+    int size;
+    char buf[MAX_SEND_SIZE];
+
+    if (received_messages.count(fd)) {
+        // Read as much data as we can
+        if (safe_receive(fd, buf, *((int *)received_messages[fd].buf) - received_messages[fd].offset, size)) {
+
+            memcpy(
+                received_messages[fd].buf + received_messages[fd].offset,
+                buf,
+                size
+            );
+
+            received_messages[fd].offset += size;
+
+            if (received_messages[fd].offset == *((int *)received_messages[fd].buf)) {
+                process_message(fd);
+            }
+
+        }
+        // handle client data
+        //cerr << "We got fucking hype!!!: " << buf+8 << endl;
+        //cerr << "Size " << size << endl;
+    }
+    else {
+        // Read in the initial length, and message type of the buffer
+        if (safe_receive(fd, buf, METADATA_LEN, size)) {
+            int message_length = *((int *)buf);
+
+            /*
+            message_assembly a = {
+                METADATA_LEN,
+                new char[message_length]
+            };
+            */
+            message_assembly a;
+
+            a.offset = METADATA_LEN;
+            a.buf = new char[message_length];
+
+            // Add length and type to the buffer
+            strncpy(a.buf, buf, METADATA_LEN);
+
+            //cerr << "Message length is: " << message_length << endl;
+
+            received_messages[fd] = a;
+        }
+    }
+}
+
 void NetworkReceiver::handle_set_fd(int fd) {
     // handle new connections to the main listener socket
     if (fd == listen_fd) {
@@ -132,33 +208,7 @@ void NetworkReceiver::handle_set_fd(int fd) {
     }
     // Data is from a client
     else {
-        char buf[256];
-        int size;
-
-        // Error or connection closed by client
-        if ((size = recv(fd, buf, 256, 0)) <= 0) {
-
-            if (size == 0) {
-                //cout << "Socket " << fd << " hung up." << endl;
-            }
-            else {
-                perror("recv");
-            }
-
-            //Remove client from the master fd list
-            close(fd);
-            FD_CLR(fd, &master_fds);
-        }
-        else {
-            // handle client data
-
-            //cout << "Sending back the string: " << m->s << endl;
-
-            //Send the client back the title case string
-            if (send(fd, buf, size, 0) == -1) {
-                //perror("send");
-            }
-        }
+        handle_client_data(fd);
     } 
 }
 
