@@ -35,7 +35,7 @@ void socket_setup(int &sock, struct sockaddr_in &addr) {
     addr.sin_port = htons(0);
 
     //Bind to a socket
-    if(bind(sock, (struct sockaddr *) &addr, sizeof(struct sockaddr_in)) < 0)
+    if(::bind(sock, (struct sockaddr *) &addr, sizeof(struct sockaddr_in)) < 0)
     {
         cerr << "Unable to bind to socket" << endl;
         exit(1);
@@ -55,7 +55,7 @@ NetworkReceiver::NetworkReceiver() {
     gethostname(hostname, MAX_HOSTNAME_LEN);
     getsockname(listen_fd, (struct sockaddr *)&addr_info, &sock_len);
 
-    
+
 
 
     //Begin listening on the socket
@@ -66,7 +66,7 @@ NetworkReceiver::NetworkReceiver() {
 
     // Set our highest seen fd to listener fd
     max_fd = listen_fd;
-    
+
     // Set the master list of file descriptors to the listener socket
     FD_ZERO(&master_fds);
     FD_SET(listen_fd, &master_fds);
@@ -81,7 +81,7 @@ void NetworkReceiver::run() {
     // We DO NOT call virtual functions inside constructors
     extra_setup();
 
-    while(true) {    
+    while(true) {
         current_fds = master_fds; // copy it
         if (select(max_fd+1, &current_fds, NULL, NULL, NULL) == -1) {
             //perror("select");
@@ -208,6 +208,6 @@ void NetworkReceiver::handle_set_fd(int fd) {
     // Data is from a client
     else {
         handle_client_data(fd);
-    } 
+    }
 }
 
