@@ -10,8 +10,8 @@ using namespace std;
 int ARG_SIZES[] = {
     0, //padding
     sizeof(char),
-    sizeof(short), 
-    sizeof(int), 
+    sizeof(short),
+    sizeof(int),
     sizeof(long),
     sizeof(double),
     sizeof(float)
@@ -58,7 +58,7 @@ unsigned int get_args_len(int *argTypes) {
 
         argTypes++;
     }
-    
+
     return len;
 }
 

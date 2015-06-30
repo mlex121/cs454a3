@@ -38,13 +38,19 @@ enum message_type {
     EXECUTE,
     EXECUTE_SUCCESS,
     EXECUTE_FAILURE,
-    
+
     TERMINATE
+};
+
+enum reason_code {
+    REASON_WRONG_ARGUMENTS,
+    REASON_UNKNOWN_FUNCTION,
+    // more as necessary
 };
 
 struct message {
     // I'm not actually sure how necessary these are, but have
-    // left message as a struct in case we need them, or anything else 
+    // left message as a struct in case we need them, or anything else
     //int length;
     //message_type type;
     // Buf contains length followed by type, followed by message

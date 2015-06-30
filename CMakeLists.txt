@@ -18,7 +18,7 @@ find_package (Threads)
 
 # Libraries
 # -----------------------------
-    add_library(rpc src/rpc_client_funcs.cpp src/rpc_server_funcs.cpp src/common_defs.cpp )
+    add_library(rpc src/rpc_client_funcs.cpp src/rpc_server_funcs.cpp src/common_defs.cpp src/message.cpp)
     add_library(receiver src/receiver.cpp )
 
     TARGET_LINK_LIBRARIES(rpc ${CMAKE_THREAD_LIBS_INIT})

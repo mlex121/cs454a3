@@ -18,6 +18,7 @@
 
 #include "rpc.h"
 #include "common_defs.h"
+#include "message.h"
 
 enum SERVER_ERRORS {
   BINDER_NOT_FOUND,
@@ -61,7 +62,7 @@ class BinderNetworkHandler {
 void* BinderNetworkHandler::dispatch(void *arg) {
   BinderNetworkHandler *c = (BinderNetworkHandler *)arg;
 
-  int size;  
+  int size;
   char buf[MAX_DATA_LEN];
   message *m;
 
@@ -170,54 +171,13 @@ void BinderNetworkHandler::run() {
     }
 }
 
-message* get_register_request(char *hostname, char *port, char *name, int *argTypes) {
-    message *m = new message;
-
-    unsigned int argTypes_bytes = get_argtypes_len(argTypes) * sizeof(*argTypes);
-
-    int message_len = (
-        METADATA_LEN +
-        MAX_HOSTNAME_LEN +
-        MAX_PORT_LEN +
-        MAX_FUNCTION_NAME_LEN +
-        argTypes_bytes
-    );
-
-    //m->length = message_len;
-    //m->type = REGISTER;
-    
-    m->buf = new char[message_len];
-
-    ((int *)m->buf)[0] = message_len;
-    ((int *)m->buf)[1] = REGISTER;
-
-    unsigned int offset  = METADATA_LEN;
-
-    strncpy(m->buf + offset, hostname, MAX_HOSTNAME_LEN);
-    offset += MAX_HOSTNAME_LEN;
-
-    strncpy(m->buf + offset, port, MAX_PORT_LEN);
-    offset += MAX_PORT_LEN;
-
-    strncpy(m->buf + offset, name, MAX_FUNCTION_NAME_LEN);
-    offset += MAX_FUNCTION_NAME_LEN;
-
-    memcpy(m->buf + offset, (char *)argTypes, argTypes_bytes);
-
-    offset += argTypes_bytes;
-
-    assert(message_len == offset);
-
-    return m;
-}
-
 int BinderNetworkHandler::rpcRegister(char *name, int *argTypes, skeleton f) {
     message *m = get_register_request(hostname, port, name, argTypes);
 
     //cout << "Arg length is: " << get_args_len(argTypes) << endl;
     //cout << "Message hostname is: " << m->buf + 8 << endl;
     cout << "Message length is: " << *((int *)m->buf) << endl;
-    
+
     //Send data to server
     // FIXME do this in a loop
     if (send(sock_fd, m->buf, *((int *)m->buf), 0) == -1) {
@@ -231,6 +191,8 @@ int BinderNetworkHandler::rpcRegister(char *name, int *argTypes, skeleton f) {
         exit(1);
     }
     */
+
+    return 0;
 }
 
 BinderNetworkHandler *b = NULL;
