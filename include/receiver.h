@@ -1,7 +1,7 @@
 #ifndef RECEIVER_H
 #define RECEIVER_H
 
-#include <map>
+#include <unordered_map>
 
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -39,7 +39,7 @@ class NetworkReceiver {
     void handle_set_fd(int fd);
 
     protected:
-        std::map<int, message_assembly> received_messages;
+        std::unordered_map<int, message_assembly> received_messages;
 
         char hostname[MAX_HOSTNAME_LEN];
         struct sockaddr_in addr_info;

@@ -141,7 +141,6 @@ void NetworkReceiver::handle_client_data(int fd) {
             if (received_messages[fd].offset == *((int *)received_messages[fd].buf)) {
                 process_message(fd);
             }
-
         }
         // handle client data
         //cerr << "We got fucking hype!!!: " << buf+8 << endl;

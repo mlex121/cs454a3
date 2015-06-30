@@ -1,11 +1,13 @@
 #ifndef COMMON_DEFS_H
 #define COMMON_DEFS_H
 
+#include <string>
+
 // Message Handling
 
 // We allow up to one extra character, so that null characters will
 // be copied if a string is the maximum length
-#define PADDING 1
+#define PADDING 4
 
 #define MAX_HOSTNAME_LEN      (64 + PADDING)
 #define MAX_PORT_LEN          (64 + PADDING)
@@ -22,6 +24,7 @@
 #define ARG_LEN_MASK  0x0000FFFF
 
 extern int ARG_SIZES[];
+extern char const *ARG_NAMES[];
 
 enum message_type {
     REGISTER,
@@ -51,5 +54,6 @@ struct message {
 unsigned int get_argtypes_len(int *argTypes);
 unsigned int get_argtype(int argType);
 unsigned int get_args_len(int *argTypes);
+std::string get_argTypes_string(int *argTypes);
 
 #endif

@@ -173,14 +173,14 @@ void BinderNetworkHandler::run() {
 message* get_register_request(char *hostname, char *port, char *name, int *argTypes) {
     message *m = new message;
 
-    unsigned int argTypes_len_in_chars = get_argtypes_len(argTypes) * sizeof(*argTypes);
+    unsigned int argTypes_bytes = get_argtypes_len(argTypes) * sizeof(*argTypes);
 
     int message_len = (
         METADATA_LEN +
         MAX_HOSTNAME_LEN +
         MAX_PORT_LEN +
         MAX_FUNCTION_NAME_LEN +
-        argTypes_len_in_chars
+        argTypes_bytes
     );
 
     //m->length = message_len;
@@ -190,7 +190,6 @@ message* get_register_request(char *hostname, char *port, char *name, int *argTy
 
     ((int *)m->buf)[0] = message_len;
     ((int *)m->buf)[1] = REGISTER;
-
 
     unsigned int offset  = METADATA_LEN;
 
@@ -203,8 +202,9 @@ message* get_register_request(char *hostname, char *port, char *name, int *argTy
     strncpy(m->buf + offset, name, MAX_FUNCTION_NAME_LEN);
     offset += MAX_FUNCTION_NAME_LEN;
 
-    strncpy(m->buf + offset, (char *)argTypes, argTypes_len_in_chars);
-    offset += argTypes_len_in_chars;
+    memcpy(m->buf + offset, (char *)argTypes, argTypes_bytes);
+
+    offset += argTypes_bytes;
 
     assert(message_len == offset);
 
@@ -212,9 +212,6 @@ message* get_register_request(char *hostname, char *port, char *name, int *argTy
 }
 
 int BinderNetworkHandler::rpcRegister(char *name, int *argTypes, skeleton f) {
-    unsigned int argTypes_len = get_argtypes_len(argTypes);
-
-
     message *m = get_register_request(hostname, port, name, argTypes);
 
     //cout << "Arg length is: " << get_args_len(argTypes) << endl;
