@@ -14,12 +14,9 @@
 using namespace std;
 
 typedef pair<string, string> ServerLocation;
-typedef pair<string, string> CompleteFunction;
-
 typedef map<CompleteFunction, set<ServerLocation>> FunctionLocations;
 
 class BinderReceiver : public NetworkReceiver {
-
     list<ServerLocation> server_priorities;
     
     // using unordered types requires setting up a custom hash function
@@ -123,6 +120,8 @@ void BinderReceiver::process_message(int fd) {
     switch (*((int *)(m->buf) + 1)) {
         case REGISTER:
             process_registration(m);
+            break;
+        case EXECUTE:
             print_registrations();
             break;
         default:

@@ -9,8 +9,7 @@
 
 #include "common_defs.h"
 
-//FIXME what is this supposed to be?
-#define MAX_CONNECTIONS 100
+#define MAX_CONNECTIONS 5
 
 struct message_assembly {
     // The current end of the buffer, where we write to

@@ -36,7 +36,7 @@ void *get_in_addr(struct sockaddr *sa)
 
 using namespace std;
 
-class BinderNetworkHandler {
+class ServerSender {
     int sock_fd;
 
     list<string> client_data;
@@ -52,15 +52,15 @@ class BinderNetworkHandler {
     char *port;
 
     public:
-        BinderNetworkHandler();
+        ServerSender();
         int rpcRegister(char *name, int *argTypes, skeleton f);
         void run();
         static void *dispatch(void *arg);
 };
 
 /*
-void* BinderNetworkHandler::dispatch(void *arg) {
-  BinderNetworkHandler *c = (BinderNetworkHandler *)arg;
+void* ServerSender::dispatch(void *arg) {
+  ServerSender *c = (ServerSender *)arg;
 
   int size;
   char buf[MAX_DATA_LEN];
@@ -99,7 +99,7 @@ void* BinderNetworkHandler::dispatch(void *arg) {
 }
 */
 
-BinderNetworkHandler::BinderNetworkHandler() {
+ServerSender::ServerSender() {
     hostname    = getenv("SERVER_ADDRESS");
     port        = getenv("SERVER_PORT");
 
@@ -149,12 +149,12 @@ BinderNetworkHandler::BinderNetworkHandler() {
     sem_init(&write_avail, 0, 1);
 }
 
-void BinderNetworkHandler::run() {
+void ServerSender::run() {
     pthread_t worker;
     string s;
 
     /*
-    int ret = pthread_create(&worker, NULL, &BinderNetworkHandler::dispatch, (void *)(this));
+    int ret = pthread_create(&worker, NULL, &ServerSender::dispatch, (void *)(this));
     if (ret) {
         cout << "Error: Unable to spawn worker thread." << endl;
     }
@@ -171,7 +171,7 @@ void BinderNetworkHandler::run() {
     }
 }
 
-int BinderNetworkHandler::rpcRegister(char *name, int *argTypes, skeleton f) {
+int ServerSender::rpcRegister(char *name, int *argTypes, skeleton f) {
     message *m = get_register_request(hostname, port, name, argTypes);
 
     //cout << "Arg length is: " << get_args_len(argTypes) << endl;
@@ -195,12 +195,12 @@ int BinderNetworkHandler::rpcRegister(char *name, int *argTypes, skeleton f) {
     return 0;
 }
 
-BinderNetworkHandler *b = NULL;
+ServerSender *server_sender = NULL;
 
 int rpcInit() {
-    if (b == NULL) {
+    if (server_sender == NULL) {
         try {
-            b = new BinderNetworkHandler();
+            server_sender = new ServerSender();
         }
         catch (SERVER_ERRORS e) {
             return e;
@@ -214,11 +214,11 @@ int rpcInit() {
 }
 
 int rpcRegister(char* name, int* argTypes, skeleton f) {
-    if (b == NULL) {
+    if (server_sender == NULL) {
       throw UNITIALIZED_BINDER_NETWORK_HANDLER;
     }
 
-    return b->rpcRegister(name, argTypes, f);
+    return server_sender->rpcRegister(name, argTypes, f);
 }
 
 int rpcExecute() {

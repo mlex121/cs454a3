@@ -2,6 +2,7 @@
 #define COMMON_DEFS_H
 
 #include <string>
+#include <utility>
 
 // Message Handling
 
@@ -25,6 +26,9 @@
 
 extern int ARG_SIZES[];
 extern char const *ARG_NAMES[];
+
+// Fully qualified with type arguments, used in binder and server databases
+typedef std::pair<std::string, std::string> CompleteFunction;
 
 enum message_type {
     REGISTER,
