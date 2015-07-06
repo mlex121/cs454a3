@@ -33,8 +33,8 @@ class BinderReceiver : public NetworkReceiver {
 };
 
 void BinderReceiver::extra_setup() {
-    cout << "SERVER_ADDRESS " << hostname << endl;
-    cout << "SERVER_PORT " << ntohs(addr_info.sin_port) << endl;
+    cout << "BINDER_ADDRESS " << hostname << endl;
+    cout << "BINDER_PORT " << port << endl;
 }
 
 void BinderReceiver::print_registrations() {

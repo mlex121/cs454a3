@@ -18,19 +18,34 @@ find_package (Threads)
 
 # Libraries
 # -----------------------------
-    add_library(rpc src/rpc_client_funcs.cpp src/rpc_server_funcs.cpp src/common_defs.cpp src/message.cpp)
-    add_library(receiver src/receiver.cpp )
+    add_library(
+        rpc
+
+        src/client/rpc_client_funcs.cpp
+
+        src/server/rpc_server_funcs.cpp
+        src/server/server_receiver.cpp
+        src/server/server_sender.cpp
+
+        src/common/common_defs.cpp
+        src/common/message.cpp
+        src/common/receiver.cpp
+    )
 
     TARGET_LINK_LIBRARIES(rpc ${CMAKE_THREAD_LIBS_INIT})
-    TARGET_LINK_LIBRARIES(receiver ${CMAKE_THREAD_LIBS_INIT})
 # -----------------------------
 
 
 #Binaries
 # -----------------------------
-    add_executable(binder src/binder.cpp)
-    add_executable(server src/server.c src/server_function_skels.c src/server_functions.c)
+    add_executable(binder src/binder/binder.cpp)
+    add_executable(
+        server
+        src/test/server/server.c
+        src/test/server/server_function_skels.c
+        src/test/server/server_functions.c
+    )
 
-    TARGET_LINK_LIBRARIES(binder rpc receiver)
+    TARGET_LINK_LIBRARIES(binder rpc)
     TARGET_LINK_LIBRARIES(server rpc)
 # -----------------------------

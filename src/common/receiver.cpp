@@ -52,11 +52,9 @@ NetworkReceiver::NetworkReceiver() {
     socket_setup(listen_fd, receiver_addr);
 
     //Get our channel info
-    gethostname(hostname, MAX_HOSTNAME_LEN);
     getsockname(listen_fd, (struct sockaddr *)&addr_info, &sock_len);
-
-
-
+    gethostname(hostname, MAX_HOSTNAME_LEN);
+    strncpy(port, to_string(ntohs(addr_info.sin_port)).c_str(), MAX_PORT_LEN);
 
     //Begin listening on the socket
     if (listen(listen_fd, MAX_CONNECTIONS) == -1) {

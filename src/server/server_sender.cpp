@@ -1,29 +1,17 @@
-#include <iostream>
-#include <list>
-
-#include <arpa/inet.h>
-#include <assert.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <signal.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
-
-#include "rpc.h"
 #include "common_defs.h"
 #include "message.h"
+#include "server_sender.h"
 
-enum SERVER_ERRORS {
-  BINDER_NOT_FOUND,
-  UNITIALIZED_BINDER_NETWORK_HANDLER
-};
+#include <iostream>
+
+#include <string.h>
+#include <stdio.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+//#include <sys/wait.h>
+
+using namespace std;
 
 void *get_in_addr(struct sockaddr *sa)
 {
@@ -33,30 +21,6 @@ void *get_in_addr(struct sockaddr *sa)
 
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
-
-using namespace std;
-
-class ServerSender {
-    int sock_fd;
-
-    list<string> client_data;
-
-    sem_t read_avail;
-    sem_t write_avail;
-
-    struct addrinfo hints, *servinfo, *p;
-    int rv;
-    char remoteIP[INET6_ADDRSTRLEN];
-
-    char *hostname;
-    char *port;
-
-    public:
-        ServerSender();
-        int rpcRegister(char *name, int *argTypes, skeleton f);
-        void run();
-        static void *dispatch(void *arg);
-};
 
 /*
 void* ServerSender::dispatch(void *arg) {
@@ -100,8 +64,8 @@ void* ServerSender::dispatch(void *arg) {
 */
 
 ServerSender::ServerSender() {
-    hostname    = getenv("SERVER_ADDRESS");
-    port        = getenv("SERVER_PORT");
+    hostname    = getenv("BINDER_ADDRESS");
+    port        = getenv("BINDER_PORT");
 
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
@@ -149,16 +113,15 @@ ServerSender::ServerSender() {
     sem_init(&write_avail, 0, 1);
 }
 
+/*
 void ServerSender::run() {
     pthread_t worker;
     string s;
 
-    /*
     int ret = pthread_create(&worker, NULL, &ServerSender::dispatch, (void *)(this));
     if (ret) {
         cout << "Error: Unable to spawn worker thread." << endl;
     }
-    */
 
     cout << "Working" << endl;
 
@@ -170,6 +133,7 @@ void ServerSender::run() {
         }
     }
 }
+*/
 
 int ServerSender::rpcRegister(char *name, int *argTypes, skeleton f) {
     message *m = get_register_request(hostname, port, name, argTypes);
@@ -192,35 +156,5 @@ int ServerSender::rpcRegister(char *name, int *argTypes, skeleton f) {
     }
     */
 
-    return 0;
-}
-
-ServerSender *server_sender = NULL;
-
-int rpcInit() {
-    if (server_sender == NULL) {
-        try {
-            server_sender = new ServerSender();
-        }
-        catch (SERVER_ERRORS e) {
-            return e;
-        }
-    }
-    else {
-      cerr << "rpcInit called more than once" << endl;
-    }
-
-    return 0;
-}
-
-int rpcRegister(char* name, int* argTypes, skeleton f) {
-    if (server_sender == NULL) {
-      throw UNITIALIZED_BINDER_NETWORK_HANDLER;
-    }
-
-    return server_sender->rpcRegister(name, argTypes, f);
-}
-
-int rpcExecute() {
     return 0;
 }
