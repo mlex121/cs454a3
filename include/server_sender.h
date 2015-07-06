@@ -6,7 +6,6 @@
 #include <netdb.h>
 #include <semaphore.h>
 #include <stdlib.h>
-#include <sys/wait.h>
 
 #include "rpc.h"
 
@@ -33,12 +32,18 @@ class ServerSender {
     int rv;
     char remoteIP[INET6_ADDRSTRLEN];
 
-    char *hostname;
-    char *port;
+    char receiver_hostname[MAX_HOSTNAME_LEN];
+    char receiver_port[MAX_PORT_LEN];
+
+    char dest_hostname[MAX_HOSTNAME_LEN];
+    char dest_port[MAX_PORT_LEN];
+
+    int send_message(message *m);
 
     public:
-        ServerSender();
+        ServerSender(char receiver_hostname[MAX_HOSTNAME_LEN], char receiver_port[MAX_PORT_LEN]);
         int rpcRegister(char *name, int *argTypes, skeleton f);
+        int rpcExecute();
         void run();
         static void *dispatch(void *arg);
 };

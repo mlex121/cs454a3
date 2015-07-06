@@ -120,8 +120,6 @@ void BinderReceiver::process_message(int fd) {
     switch (*((int *)(m->buf) + 1)) {
         case REGISTER:
             process_registration(m);
-            break;
-        case EXECUTE:
             print_registrations();
             break;
         default:

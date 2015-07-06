@@ -63,15 +63,19 @@ void* ServerSender::dispatch(void *arg) {
 }
 */
 
-ServerSender::ServerSender() {
-    hostname    = getenv("BINDER_ADDRESS");
-    port        = getenv("BINDER_PORT");
+ServerSender::ServerSender(char receiver_hostname[MAX_HOSTNAME_LEN], char receiver_port[MAX_PORT_LEN]) {
+
+    strncpy(this->receiver_hostname,    receiver_hostname,  MAX_HOSTNAME_LEN);
+    strncpy(this->receiver_port,        receiver_port,      MAX_PORT_LEN);
+
+    strncpy(dest_hostname,  getenv("BINDER_ADDRESS"),    MAX_HOSTNAME_LEN);
+    strncpy(dest_port,      getenv("BINDER_PORT"),       MAX_PORT_LEN);
 
     memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC;
+    hints.ai_family =   AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
-    if ((rv = getaddrinfo(hostname, port, &hints, &servinfo)) != 0) {
+    if ((rv = getaddrinfo(dest_hostname, dest_port, &hints, &servinfo)) != 0) {
         cerr << "getaddrinfo: " << gai_strerror(rv) << endl;
         exit(1);
     }
@@ -135,9 +139,7 @@ void ServerSender::run() {
 }
 */
 
-int ServerSender::rpcRegister(char *name, int *argTypes, skeleton f) {
-    message *m = get_register_request(hostname, port, name, argTypes);
-
+int ServerSender::send_message(message *m) {
     //cout << "Arg length is: " << get_args_len(argTypes) << endl;
     //cout << "Message hostname is: " << m->buf + 8 << endl;
     cout << "Message length is: " << *((int *)m->buf) << endl;
@@ -147,6 +149,15 @@ int ServerSender::rpcRegister(char *name, int *argTypes, skeleton f) {
     if (send(sock_fd, m->buf, *((int *)m->buf), 0) == -1) {
         perror("send");
     }
+
+    //FIXME obviously
+    return 0;
+}
+
+int ServerSender::rpcRegister(char *name, int *argTypes, skeleton f) {
+    message *m = get_register_request(receiver_hostname, receiver_port, name, argTypes);
+
+    send_message(m);
 
     /*
     //Receive server reply

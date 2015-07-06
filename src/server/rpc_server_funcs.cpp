@@ -1,13 +1,5 @@
-
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <netinet/in.h>
 #include <pthread.h>
-#include <semaphore.h>
 #include <signal.h>
-#include <string.h>
-#include <stdio.h>
-#include <unistd.h>
 
 #include "rpc.h"
 #include "server_receiver.h"
@@ -29,8 +21,8 @@ int rpcInit() {
 
     if (!server_receiver && !server_sender) {
         try {
-            server_sender = new ServerSender();
             server_receiver = new ServerReceiver();
+            server_sender = new ServerSender(server_receiver->hostname, server_receiver->port);
         }
         catch (SERVER_ERRORS e) {
             return e;
@@ -57,6 +49,13 @@ int rpcRegister(char* name, int* argTypes, skeleton f) {
 }
 
 int rpcExecute() {
+    try {
+        check_network_handlers();
+        //return server_receiver->rpcExecute();
+    }
+    catch (SERVER_ERRORS e) {
+        return e;
+    }
 
     return 0;
 }

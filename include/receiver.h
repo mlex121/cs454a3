@@ -40,14 +40,15 @@ class NetworkReceiver {
     protected:
         std::unordered_map<int, message_assembly> received_messages;
 
-        char hostname[MAX_HOSTNAME_LEN];
-        char port[MAX_PORT_LEN];
         struct sockaddr_in addr_info;
 
         virtual void extra_setup();
         virtual void process_message(int fd) = 0;
 
     public:
+        char hostname[MAX_HOSTNAME_LEN];
+        char port[MAX_PORT_LEN];
+
         NetworkReceiver();
         void run();
 };
