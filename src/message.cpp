@@ -1,6 +1,7 @@
 #include "message.h"
 
 #include <cassert>
+#include <string.h>
 
 #include "common_defs.h"
 
