@@ -61,7 +61,6 @@ void BinderReceiver::print_registrations() {
 
 
 void BinderReceiver::process_registration(message *m) {
-
     int message_length = *((int *)m);
 
     char hostname[MAX_HOSTNAME_LEN];
@@ -86,7 +85,7 @@ void BinderReceiver::process_registration(message *m) {
     */
 
     string arguments = get_argTypes_string((int *)(m->buf + offset));
-    cerr << "Arguments :" << arguments << endl;
+    //cerr << "Arguments :" << arguments << endl;
 
     CompleteFunction complete_function = make_pair(name, arguments);
     ServerLocation server_location = make_pair(hostname, port);
@@ -96,7 +95,6 @@ void BinderReceiver::process_registration(message *m) {
     if (find(server_priorities.begin(), server_priorities.end(), server_location) == server_priorities.end()) {
         server_priorities.push_front(server_location);
     }
-
 
     // Check the map to see if we have this function already registered
     if (function_locations.count(complete_function)) {
@@ -113,21 +111,21 @@ void BinderReceiver::process_registration(message *m) {
 }
 
 void BinderReceiver::process_message(int fd) {
-    cerr << "A message was received with total length: " << received_messages[fd].offset << endl;
+    //cerr << "A message was received with total length: " << received_messages[fd].offset << endl;
 
     message *m = (message *)(&received_messages[fd].buf);
 
     switch (*((int *)(m->buf) + 1)) {
         case REGISTER:
             process_registration(m);
-            print_registrations();
+            //print_registrations();
             break;
         default:
             // TODO throw something
             break;
     }
 
-    delete received_messages[fd].buf;
+    delete[] received_messages[fd].buf;
     received_messages.erase(fd);
 }
 

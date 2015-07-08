@@ -113,6 +113,8 @@ int NetworkReceiver::safe_receive(int fd, char *buf, int len, int &size) {
         }
 
         cleanup_fd(fd);
+
+
         return 0;
     }
     else {
@@ -126,8 +128,12 @@ void NetworkReceiver::handle_client_data(int fd) {
 
     if (received_messages.count(fd)) {
         // Read as much data as we can
-        if (safe_receive(fd, buf, *((int *)received_messages[fd].buf) - received_messages[fd].offset, size)) {
+        int receive_limit = min(
+            *((int *)received_messages[fd].buf) - received_messages[fd].offset,
+            MAX_SEND_SIZE
+        );
 
+        if (safe_receive(fd, buf, receive_limit, size)) {
             memcpy(
                 received_messages[fd].buf + received_messages[fd].offset,
                 buf,
@@ -140,30 +146,24 @@ void NetworkReceiver::handle_client_data(int fd) {
                 process_message(fd);
             }
         }
-        // handle client data
-        //cerr << "We got fucking hype!!!: " << buf+8 << endl;
-        //cerr << "Size " << size << endl;
+        else {
+            //cerr << "Network error" << endl;
+            // TODO throw something
+        }
     }
     else {
         // Read in the initial length, and message type of the buffer
         if (safe_receive(fd, buf, METADATA_LEN, size)) {
             int message_length = *((int *)buf);
 
-            /*
-            message_assembly a = {
-                METADATA_LEN,
-                new char[message_length]
-            };
-            */
             message_assembly a;
-
             a.offset = METADATA_LEN;
             a.buf = new char[message_length];
 
             // Add length and type to the buffer
             strncpy(a.buf, buf, METADATA_LEN);
 
-            //cerr << "Message length is: " << message_length << endl;
+            cerr << "Message length is: " << message_length << endl;
 
             received_messages[fd] = a;
         }

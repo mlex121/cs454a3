@@ -17,6 +17,10 @@ int ARG_SIZES[] = {
     sizeof(float)
 };
 
+// This lets us pre-allocated a string
+// we get the value from the length of "double" + " ," + "io" + "*"
+#define MAX_ARG_DESCRIPTOR_LENGTH 11
+
 char const *ARG_NAMES[] = {
     "",
     "char",
@@ -62,8 +66,11 @@ unsigned int get_args_len(int *argTypes) {
     return len;
 }
 
+
+#include <iostream>
 string get_argTypes_string(int *argTypes) {
-    string argTypes_string = "";
+    string argTypes_string;
+    argTypes_string.reserve(get_argtypes_len(argTypes) * MAX_ARG_DESCRIPTOR_LENGTH);
 
     while (*argTypes) {
         argTypes_string += ARG_NAMES[get_argtype(*argTypes)];

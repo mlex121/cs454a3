@@ -39,13 +39,20 @@ find_package (Threads)
 #Binaries
 # -----------------------------
     add_executable(binder src/binder/binder.cpp)
+    TARGET_LINK_LIBRARIES(binder rpc)
+
     add_executable(
         server
         src/test/server/server.c
         src/test/server/server_function_skels.c
         src/test/server/server_functions.c
     )
-
-    TARGET_LINK_LIBRARIES(binder rpc)
     TARGET_LINK_LIBRARIES(server rpc)
+
+    add_executable(
+        long_argtypes_server
+        src/test/server/long_argtypes_server.c
+    )
+    TARGET_LINK_LIBRARIES(long_argtypes_server rpc)
+
 # -----------------------------
