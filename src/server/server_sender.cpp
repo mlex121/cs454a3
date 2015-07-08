@@ -63,55 +63,11 @@ void* ServerSender::dispatch(void *arg) {
 }
 */
 
-ServerSender::ServerSender(char receiver_hostname[MAX_HOSTNAME_LEN], char receiver_port[MAX_PORT_LEN]) {
-
+ServerSender::ServerSender(char receiver_hostname[MAX_HOSTNAME_LEN], char receiver_port[MAX_PORT_LEN]) :
+    NetworkSender(getenv("BINDER_ADDRESS"), getenv("BINDER_PORT"))
+{
     strncpy(this->receiver_hostname,    receiver_hostname,  MAX_HOSTNAME_LEN);
     strncpy(this->receiver_port,        receiver_port,      MAX_PORT_LEN);
-
-    strncpy(dest_hostname,  getenv("BINDER_ADDRESS"),    MAX_HOSTNAME_LEN);
-    strncpy(dest_port,      getenv("BINDER_PORT"),       MAX_PORT_LEN);
-
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family =   AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-
-    if ((rv = getaddrinfo(dest_hostname, dest_port, &hints, &servinfo)) != 0) {
-        cerr << "getaddrinfo: " << gai_strerror(rv) << endl;
-        exit(1);
-    }
-
-    // loop through all the results and connect to the first we can
-    for(p = servinfo; p != NULL; p = p->ai_next) {
-        sock_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
-        if (sock_fd == -1) {
-            continue;
-        }
-
-        if (connect(sock_fd, p->ai_addr, p->ai_addrlen) == -1) {
-            close(sock_fd);
-            continue;
-        }
-
-        break;
-    }
-
-    if (p == NULL) {
-        cerr << "client: failed to connect" << endl;
-        throw BINDER_NOT_FOUND;
-    }
-
-    /*
-    inet_ntop(
-        p->ai_family,
-        get_in_addr((struct sockaddr *)p->ai_addr),
-        remoteIP,
-        sizeof(remoteIP)
-    );
-
-    cout << "client: connected to " << remoteIP << " on port " << port << endl;
-    */
-
-    freeaddrinfo(servinfo);
 
     sem_init(&read_avail, 0, 0);
     sem_init(&write_avail, 0, 1);
@@ -138,21 +94,6 @@ void ServerSender::run() {
     }
 }
 */
-
-int ServerSender::send_message(message *m) {
-    //cout << "Arg length is: " << get_args_len(argTypes) << endl;
-    //cout << "Message hostname is: " << m->buf + 8 << endl;
-    cout << "Message length is: " << *((int *)m->buf) << endl;
-
-    //Send data to server
-    // FIXME do this in a loop
-    if (send(sock_fd, m->buf, *((int *)m->buf), 0) == -1) {
-        perror("send");
-    }
-
-    //FIXME obviously
-    return 0;
-}
 
 int ServerSender::rpcRegister(char *name, int *argTypes, skeleton f) {
     message *m = get_register_request(receiver_hostname, receiver_port, name, argTypes);

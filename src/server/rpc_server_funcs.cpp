@@ -32,7 +32,7 @@ int rpcInit() {
         return ALREADY_INITIALIZED_NETWORK_HANDLERS;
     }
     else {
-        UNITIALIZED_NETWORK_HANDLERS;
+        return UNITIALIZED_NETWORK_HANDLERS;
     }
 
     return 0;

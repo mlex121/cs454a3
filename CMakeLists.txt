@@ -30,6 +30,7 @@ find_package (Threads)
         src/common/common_defs.cpp
         src/common/message.cpp
         src/common/receiver.cpp
+        src/common/sender.cpp
     )
 
     TARGET_LINK_LIBRARIES(rpc ${CMAKE_THREAD_LIBS_INIT})
