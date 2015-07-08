@@ -18,8 +18,8 @@ int ARG_SIZES[] = {
 };
 
 // This lets us pre-allocated a string
-// we get the value from the length of "double" + " ," + "io" + "*"
-#define MAX_ARG_DESCRIPTOR_LENGTH 11
+// we get the value from the length of "double" + " ," + ":i:o" + "*"
+#define MAX_ARG_DESCRIPTOR_LENGTH 13
 
 char const *ARG_NAMES[] = {
     "",
@@ -75,8 +75,10 @@ string get_argTypes_string(int *argTypes) {
     while (*argTypes) {
         argTypes_string += ARG_NAMES[get_argtype(*argTypes)];
 
-        unsigned int arg_len = *argTypes & ARG_LEN_MASK;
-        if (arg_len) argTypes_string += '*';
+        if (*argTypes & ARG_LEN_MASK) argTypes_string += '*';
+
+        if (*argTypes & ARG_INPUT_MASK) argTypes_string += ":i";
+        if (*argTypes & ARG_OUTPUT_MASK) argTypes_string += ":o";
 
         argTypes_string += ", ";
         argTypes++;

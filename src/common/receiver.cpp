@@ -163,8 +163,7 @@ void NetworkReceiver::handle_client_data(int fd) {
             // Add length and type to the buffer
             strncpy(a.buf, buf, METADATA_LEN);
 
-            cerr << "Message length is: " << message_length << endl;
-
+            //cerr << "Message length is: " << message_length << endl;
             received_messages[fd] = a;
         }
     }

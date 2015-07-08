@@ -4,6 +4,8 @@
 #include <string>
 #include <utility>
 
+#include "rpc.h"
+
 // Message Handling
 
 // We allow up to one extra character, so that null characters will
@@ -20,6 +22,9 @@
 // Maximum size for a single send request
 // this is large, because we want to minimize network traffic
 #define MAX_SEND_SIZE 4096
+
+#define ARG_INPUT_MASK (1 << ARG_INPUT)
+#define ARG_OUTPUT_MASK (1 << ARG_OUTPUT)
 
 #define ARG_TYPE_MASK 0x00FF0000
 #define ARG_LEN_MASK  0x0000FFFF

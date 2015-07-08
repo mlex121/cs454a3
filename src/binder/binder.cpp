@@ -85,7 +85,7 @@ void BinderReceiver::process_registration(message *m) {
     */
 
     string arguments = get_argTypes_string((int *)(m->buf + offset));
-    //cerr << "Arguments :" << arguments << endl;
+    cerr << "Arguments :" << arguments << endl;
 
     CompleteFunction complete_function = make_pair(name, arguments);
     ServerLocation server_location = make_pair(hostname, port);
