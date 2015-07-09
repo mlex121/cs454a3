@@ -22,7 +22,8 @@ class BinderReceiver : public NetworkReceiver {
     // using unordered types requires setting up a custom hash function
     FunctionLocations function_locations;
 
-    void process_registration(message *m);
+    void process_registration(int fd, message *m);
+    void process_request(int fd, message *m);
 
     protected:
         virtual void extra_setup();
@@ -60,7 +61,7 @@ void BinderReceiver::print_registrations() {
 }
 
 
-void BinderReceiver::process_registration(message *m) {
+void BinderReceiver::process_registration(int fd, message *m) {
     int message_length = *((int *)m);
 
     char hostname[MAX_HOSTNAME_LEN];
@@ -85,7 +86,7 @@ void BinderReceiver::process_registration(message *m) {
     */
 
     string arguments = get_argTypes_string((int *)(m->buf + offset));
-    cerr << "Arguments :" << arguments << endl;
+    //cerr << "Arguments :" << arguments << endl;
 
     CompleteFunction complete_function = make_pair(name, arguments);
     ServerLocation server_location = make_pair(hostname, port);
@@ -110,15 +111,57 @@ void BinderReceiver::process_registration(message *m) {
     }
 }
 
+void BinderReceiver::process_request(int fd, message *m) {
+    int message_length = *((int *)m);
+
+    char name[MAX_FUNCTION_NAME_LEN];
+
+    unsigned int offset = METADATA_LEN;
+
+    strncpy(name, m->buf + offset, MAX_FUNCTION_NAME_LEN);
+    offset += MAX_FUNCTION_NAME_LEN;
+
+    cerr << "Name is: " << name << endl;
+
+    string arguments = get_argTypes_string((int *)(m->buf + offset));
+    CompleteFunction complete_function = make_pair(name, arguments);
+
+    //cerr << "Arguments :" << arguments << endl;
+
+    ServerLocation *s = NULL;
+
+    for (list<ServerLocation>::iterator it = server_priorities.begin(); it != server_priorities.end(); it++) {
+        if (function_locations[complete_function].count(*it)) {
+            server_priorities.push_back(*it);
+            server_priorities.erase(it);
+            s = &server_priorities.back();
+            break;
+        }
+    }
+
+    if (s) {
+        cerr << "Hostname: " << s->first << " Port: " << s->second << endl;
+        //send_reply(fd, get_loc_success(s->first, s->second));
+    }
+    else {
+
+    }
+}
+
 void BinderReceiver::process_message(int fd) {
-    //cerr << "A message was received with total length: " << received_messages[fd].offset << endl;
+    cerr << "A message was received with total length: " << received_messages[fd].offset << endl;
 
     message *m = (message *)(&received_messages[fd].buf);
 
+    //cerr << "Message type is: " << *((int *)(m->buf) + 1) << endl;
+
     switch (*((int *)(m->buf) + 1)) {
         case REGISTER:
-            process_registration(m);
+            process_registration(fd, m);
             //print_registrations();
+            break;
+        case LOC_REQUEST:
+            process_request(fd, m);
             break;
         default:
             // TODO throw something

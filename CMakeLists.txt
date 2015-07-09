@@ -22,6 +22,7 @@ find_package (Threads)
         rpc
 
         src/client/rpc_client_funcs.cpp
+        src/client/client_sender.cpp
 
         src/server/rpc_server_funcs.cpp
         src/server/server_receiver.cpp
@@ -55,5 +56,11 @@ find_package (Threads)
         src/test/server/long_argtypes_server.c
     )
     TARGET_LINK_LIBRARIES(long_argtypes_server rpc)
+
+    add_executable(
+        client        
+        src/test/client/client.c
+    )
+    TARGET_LINK_LIBRARIES(client rpc)
 
 # -----------------------------

@@ -1,6 +1,7 @@
 #include <pthread.h>
 #include <signal.h>
 
+#include "common_defs.h"
 #include "rpc.h"
 #include "server_receiver.h"
 #include "server_sender.h"
@@ -12,7 +13,7 @@ ServerReceiver *server_receiver = NULL;
 
 void check_network_handlers() {
     if (!server_receiver || !server_receiver) {
-      throw UNITIALIZED_NETWORK_HANDLERS;
+      throw UNINITIALIZED_NETWORK_HANDLERS;
     }
 }
 
@@ -24,7 +25,7 @@ int rpcInit() {
             server_receiver = new ServerReceiver();
             server_sender = new ServerSender(server_receiver->hostname, server_receiver->port);
         }
-        catch (SERVER_ERRORS e) {
+        catch (ERRORS e) {
             return e;
         }
     }
@@ -32,7 +33,7 @@ int rpcInit() {
         return ALREADY_INITIALIZED_NETWORK_HANDLERS;
     }
     else {
-        return UNITIALIZED_NETWORK_HANDLERS;
+        return UNINITIALIZED_NETWORK_HANDLERS;
     }
 
     return 0;
@@ -43,7 +44,7 @@ int rpcRegister(char* name, int* argTypes, skeleton f) {
         check_network_handlers();
         return server_sender->rpcRegister(name, argTypes, f);
     }
-    catch (SERVER_ERRORS e) {
+    catch (ERRORS e) {
         return e;
     }
 }
@@ -53,7 +54,7 @@ int rpcExecute() {
         check_network_handlers();
         //return server_receiver->rpcExecute();
     }
-    catch (SERVER_ERRORS e) {
+    catch (ERRORS e) {
         return e;
     }
 

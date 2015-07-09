@@ -1,9 +1,12 @@
-#include "message.h"
+#include <iostream>
 
 #include <cassert>
 #include <string.h>
 
 #include "common_defs.h"
+#include "message.h"
+
+using  namespace std;
 
 message* get_register_request(char *hostname, char *port, char *name, int *argTypes) {
     message *m = new message;
@@ -35,7 +38,6 @@ message* get_register_request(char *hostname, char *port, char *name, int *argTy
     offset += MAX_FUNCTION_NAME_LEN;
 
     memcpy(m->buf + offset, (char *)argTypes, argTypes_bytes);
-
     offset += argTypes_bytes;
 
     assert(message_len == offset);
@@ -45,6 +47,7 @@ message* get_register_request(char *hostname, char *port, char *name, int *argTy
 
 message* get_loc_request(char *name, int *argTypes) {
     message *m = new message;
+
     size_t argTypes_bytes = get_argtypes_len(argTypes) * sizeof(*argTypes);
 
     int message_len = (
@@ -67,6 +70,9 @@ message* get_loc_request(char *name, int *argTypes) {
     offset += argTypes_bytes;
 
     assert(message_len == offset);
+
+    cerr << "Message length is: " << message_len << endl;
+    cerr << "Message type is: " << LOC_REQUEST << endl;
 
     return m;
 }
@@ -151,3 +157,8 @@ message *get_terminate() {
 
     return m;
 }
+
+/*
+message *get_execute_request(char *hostname, char *port, char *name, int *argTypes, void ** args) {
+}
+*/

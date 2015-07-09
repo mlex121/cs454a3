@@ -6,7 +6,7 @@ int main(int argc, char *argv[]) {
     rpcInit();
 
     // prepare server functions' signatures */
-    int count = 10000;
+    int count = 2000000;
 
     int argTypes[count + 1];
 
@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
         argTypes[i] = (1 << ARG_OUTPUT) | (ARG_INT << 16);
     }
 
-    argTypes[10000] = 0;
+    argTypes[count] = 0;
 
     // register server functions f0~f4
     rpcRegister("f0", argTypes, 0);

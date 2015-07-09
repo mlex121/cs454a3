@@ -13,6 +13,7 @@
 
 using namespace std;
 
+/*
 void *get_in_addr(struct sockaddr *sa)
 {
     if (sa->sa_family == AF_INET) {
@@ -21,6 +22,7 @@ void *get_in_addr(struct sockaddr *sa)
 
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
+*/
 
 /*
 void* ServerSender::dispatch(void *arg) {

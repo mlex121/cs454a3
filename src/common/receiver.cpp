@@ -141,6 +141,7 @@ void NetworkReceiver::handle_client_data(int fd) {
             );
 
             received_messages[fd].offset += size;
+            cerr << "Received this much: " << size << endl;
 
             if (received_messages[fd].offset == *((int *)received_messages[fd].buf)) {
                 process_message(fd);
@@ -161,7 +162,7 @@ void NetworkReceiver::handle_client_data(int fd) {
             a.buf = new char[message_length];
 
             // Add length and type to the buffer
-            strncpy(a.buf, buf, METADATA_LEN);
+            memcpy(a.buf, buf, METADATA_LEN);
 
             //cerr << "Message length is: " << message_length << endl;
             received_messages[fd] = a;
@@ -208,3 +209,19 @@ void NetworkReceiver::handle_set_fd(int fd) {
     }
 }
 
+int NetworkReceiver::send_reply(int fd, message *m) {
+    int size = ((int *)m->buf)[0];
+    int offset = 0;
+    int ret;
+
+    while (offset != size) {
+        if ((ret = send(fd, m->buf + offset, size - offset, 0)) == -1) {
+            perror("send");
+            return -1;
+        }
+
+        offset += ret;
+    }
+
+    return 0;
+}

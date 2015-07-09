@@ -10,20 +10,7 @@
 #include "rpc.h"
 #include "sender.h"
 
-#define NUM_SERVER_ERRORS 100
-
-enum SERVER_ERRORS {
-  BINDER_NOT_FOUND = -1*NUM_SERVER_ERRORS, //all server errors should have negative codes
-  UNITIALIZED_NETWORK_HANDLERS
-};
-
-enum SERVER_WARNINGS {
-    ALREADY_INITIALIZED_NETWORK_HANDLERS = 1
-};
-
 class ServerSender : NetworkSender {
-    std::list<std::string> client_data;
-
     sem_t read_avail;
     sem_t write_avail;
 

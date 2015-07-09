@@ -1,24 +1,20 @@
 #include <iostream>
 
-#include <arpa/inet.h>
-#include <ctype.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <signal.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
-
 #include "rpc.h"
+#include "client_sender.h"
 
 using namespace std;
 
+ClientSender *client_sender = NULL;
+
 int rpcCall(char* name, int* argTypes, void** args) {
-    return 0;
+    try {
+        if (!client_sender) client_sender = new ClientSender();
+        return client_sender->rpcCall(name, argTypes, args);
+    }
+    catch (ERRORS e) {
+        return e;
+    }
 }
 
 int rpcTerminate() {

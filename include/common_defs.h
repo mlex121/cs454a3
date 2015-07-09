@@ -66,6 +66,17 @@ struct message {
     char *buf;
 };
 
+
+#define NUM_SENDER_ERRORS 100
+
+enum ERRORS {
+    BINDER_NOT_FOUND = -1*NUM_SENDER_ERRORS, //all sender errors should have negative codes
+    UNINITIALIZED_NETWORK_HANDLERS,
+
+    //Warnings start here
+    ALREADY_INITIALIZED_NETWORK_HANDLERS = 1
+};
+
 unsigned int get_argtypes_len(int *argTypes);
 unsigned int get_argtype(int argType);
 unsigned int get_args_len(int *argTypes);
