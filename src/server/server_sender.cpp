@@ -28,4 +28,5 @@ void ServerSender::rpcRegister(char *name, int *argTypes, skeleton f) {
     send_message(m);
 
     //Receive server reply
+    // FIXME this is important
 }

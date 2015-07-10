@@ -146,7 +146,8 @@ void NetworkReceiver::handle_client_data(int fd) {
             if (received_messages[fd].offset == *((int *)received_messages[fd].buf)) {
                 message *m = (message *)(&received_messages[fd].buf);
                 process_message(fd, m);
-                delete[] received_messages[fd].buf;
+
+                // Do not erase the message itself, process message is resposible for this
                 received_messages.erase(fd);
             }
         }
@@ -232,6 +233,8 @@ int NetworkReceiver::send_reply(int fd, message *m) {
 
         offset += ret;
     }
+
+    //FIXME free the message we just send back
 
     return 0;
 }

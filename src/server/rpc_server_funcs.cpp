@@ -37,7 +37,7 @@ int rpcExecute() {
         // actually, what is supposed to happen for terminate exactly? 
         // are the server supposed to keep open connections to the binder?
         // 5 hosts max seems awfully low for this?????
-        Server::get_receiver()->run();
+        Server::get_receiver()->rpcInit();
     }
     catch (ERRORS e) {
         return e;

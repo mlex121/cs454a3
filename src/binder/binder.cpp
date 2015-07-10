@@ -163,6 +163,8 @@ void BinderReceiver::process_message(int fd, message *m) {
             // TODO throw something
             break;
     }
+
+    delete[] m->buf;
 }
 
 int main(int argc, char **argv) {
