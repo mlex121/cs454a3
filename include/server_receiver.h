@@ -3,11 +3,15 @@
 
 #include <map>
 
+#include <semaphore.h>
+
 #include "receiver.h"
 
 typedef std::map<CompleteFunction, skeleton> SkeletonLocations;
 
 class ServerReceiver : public NetworkReceiver {
+    sem_t message_read_avail;
+    sem_t message_write_avail;
 
     SkeletonLocations skeleton_locations;
 
@@ -15,6 +19,7 @@ class ServerReceiver : public NetworkReceiver {
 
     protected:
         virtual void process_message(int fd, message *m);
+        virtual void extra_setup();
 
     public:
         void add_skeleton(char *name, int *argTypes, skeleton f);

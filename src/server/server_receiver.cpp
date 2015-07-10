@@ -8,6 +8,11 @@
 
 using namespace std;
 
+void ServerReceiver::extra_setup() {
+    sem_init(&message_read_avail, 0, 0);
+    sem_init(&message_write_avail, 0, 1);
+}
+
 void ServerReceiver::add_skeleton(char *name, int *argTypes, skeleton f) {
     
     CompleteFunction c = make_pair(name, get_argTypes_string(argTypes));

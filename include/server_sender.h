@@ -4,15 +4,12 @@
 #include <list>
 
 #include <netdb.h>
-#include <semaphore.h>
 #include <stdlib.h>
 
 #include "rpc.h"
 #include "sender.h"
 
 class ServerSender : NetworkSender {
-    sem_t read_avail;
-    sem_t write_avail;
 
     char receiver_hostname[MAX_HOSTNAME_LEN];
     char receiver_port[MAX_PORT_LEN];
@@ -20,8 +17,6 @@ class ServerSender : NetworkSender {
     public:
         ServerSender(char receiver_hostname[MAX_HOSTNAME_LEN], char receiver_port[MAX_PORT_LEN]);
         void rpcRegister(char *name, int *argTypes, skeleton f);
-        void run();
-        static void *dispatch(void *arg);
 };
 
 #endif
