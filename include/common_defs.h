@@ -77,9 +77,9 @@ enum ERRORS {
     ALREADY_INITIALIZED_NETWORK_HANDLERS = 1
 };
 
-unsigned int get_argtypes_len(int *argTypes);
-unsigned int get_argtype(int argType);
-unsigned int get_args_len(int *argTypes);
-std::string get_argTypes_string(int *argTypes);
+unsigned int get_argtypes_len(const int *argTypes);
+unsigned int get_argtype(const int argType);
+unsigned int get_args_len(const int *argTypes);
+std::string get_argTypes_string(const int *argTypes);
 
 #endif

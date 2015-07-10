@@ -1,3 +1,4 @@
+#include <cassert>
 #include <iostream>
 
 #include <arpa/inet.h>
@@ -141,7 +142,6 @@ void NetworkReceiver::handle_client_data(int fd) {
             );
 
             received_messages[fd].offset += size;
-            cerr << "Received this much: " << size << endl;
 
             if (received_messages[fd].offset == *((int *)received_messages[fd].buf)) {
                 process_message(fd);
@@ -161,11 +161,18 @@ void NetworkReceiver::handle_client_data(int fd) {
             a.offset = METADATA_LEN;
             a.buf = new char[message_length];
 
+            //Currently, we need to receive the first 8 bytes in a single try
+            assert(size == METADATA_LEN);
+
             // Add length and type to the buffer
             memcpy(a.buf, buf, METADATA_LEN);
 
             //cerr << "Message length is: " << message_length << endl;
             received_messages[fd] = a;
+        }
+        else {
+            // TODO
+            // throw something
         }
     }
 }

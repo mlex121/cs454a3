@@ -8,6 +8,7 @@
 #include <cassert>
 #include <string.h>
 
+#include "message.h"
 #include "rpc.h"
 #include "receiver.h"
 
@@ -141,7 +142,7 @@ void BinderReceiver::process_request(int fd, message *m) {
 
     if (s) {
         cerr << "Hostname: " << s->first << " Port: " << s->second << endl;
-        //send_reply(fd, get_loc_success(s->first, s->second));
+        send_reply(fd, get_loc_success(s->first.c_str(), s->second.c_str()));
     }
     else {
 
@@ -149,7 +150,7 @@ void BinderReceiver::process_request(int fd, message *m) {
 }
 
 void BinderReceiver::process_message(int fd) {
-    cerr << "A message was received with total length: " << received_messages[fd].offset << endl;
+    //cerr << "A message was received with total length: " << received_messages[fd].offset << endl;
 
     message *m = (message *)(&received_messages[fd].buf);
 

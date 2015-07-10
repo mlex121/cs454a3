@@ -31,7 +31,7 @@ char const *ARG_NAMES[] = {
     "float"
 };
 
-unsigned int get_argtypes_len(int *argTypes) {
+unsigned int get_argtypes_len(const int *argTypes) {
     // We want to include the trailing zero in the count
     unsigned int len = 1;
 
@@ -40,11 +40,11 @@ unsigned int get_argtypes_len(int *argTypes) {
     return len;
 }
 
-unsigned int get_argtype(int argType) {
+unsigned int get_argtype(const int argType) {
     return (argType & ARG_TYPE_MASK) >> 16;
 }
 
-unsigned int get_args_len(int *argTypes) {
+unsigned int get_args_len(const int *argTypes) {
     unsigned int len = 0;
 
     while (*argTypes) {
@@ -67,8 +67,7 @@ unsigned int get_args_len(int *argTypes) {
 }
 
 
-#include <iostream>
-string get_argTypes_string(int *argTypes) {
+string get_argTypes_string(const int *argTypes) {
     string argTypes_string;
     argTypes_string.reserve(get_argtypes_len(argTypes) * MAX_ARG_DESCRIPTOR_LENGTH);
 
@@ -76,7 +75,6 @@ string get_argTypes_string(int *argTypes) {
         argTypes_string += ARG_NAMES[get_argtype(*argTypes)];
 
         if (*argTypes & ARG_LEN_MASK) argTypes_string += '*';
-
         if (*argTypes & ARG_INPUT_MASK) argTypes_string += ":i";
         if (*argTypes & ARG_OUTPUT_MASK) argTypes_string += ":o";
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-
+tmux kill-window -t +1
 tmux new-window -t $SESSION:+1 -c ./bin
 
 tmux split-window -h -c ./bin

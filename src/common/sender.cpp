@@ -78,5 +78,43 @@ int NetworkSender::send_message(message *m) {
         offset += ret;
     }
 
+    //Free the message
+    delete[] m->buf;
+    delete m;
+
     return 0;
 }
+
+message* NetworkSender::receive_reply() {
+    int size; 
+    int offset = 0;
+    char buf[MAX_SEND_SIZE];
+
+    message *m = NULL;
+
+    if ((size = recv(sock_fd, buf, METADATA_LEN, 0)) > 0) {
+        int message_length = *((int *)buf);
+
+        m = new message;
+        m->buf = new char[message_length];
+
+        do {
+            memcpy(m->buf + offset, buf, size);
+            offset += size;
+        }
+        while (
+            offset != message_length &&
+            (size = recv(sock_fd, buf, min(message_length - offset, MAX_SEND_SIZE), 0)) > 0
+        );
+
+        if (message_length == offset) {
+            return m;
+        }
+    }
+
+    // TODO throw something
+    // size <= 0
+    return NULL;
+
+}
+

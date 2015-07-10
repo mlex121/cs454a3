@@ -20,17 +20,36 @@ ClientSender::ClientSender() :
 
 
 int ClientSender::rpcCall(char *name, int *argTypes, void ** args) {
-    message *m = get_loc_request(name, argTypes);
+    message *location_request_message = get_loc_request(name, argTypes);
+    send_message(location_request_message);
 
-    send_message(m);
+    message *location_reply_message = receive_reply();
 
-    /*
-    //Receive server reply
-    if ((size = recv(c->sock_fd, buf, MAX_DATA_LEN, 0)) == -1) {
-        perror("recv");
-        exit(1);
+    char hostname[MAX_HOSTNAME_LEN];
+    char port[MAX_PORT_LEN];
+    int offset;
+
+    switch (*((int *)(location_reply_message->buf) + 1)) {
+        case LOC_SUCCESS:
+            offset = METADATA_LEN;
+
+            strncpy(hostname, location_reply_message->buf + offset, MAX_HOSTNAME_LEN);
+            offset += MAX_HOSTNAME_LEN;
+
+            strncpy(port, location_reply_message->buf + offset, MAX_PORT_LEN);
+            offset += MAX_PORT_LEN;
+
+            break;
+        default:
+            cerr << "Message type is: " << *((int *)(location_reply_message->buf) + 1) << endl;
+            return 1;
+            break;
     }
-    */
+
+    cerr << "Hostname is: " << hostname << endl;
+    cerr << "Port is: " << port << endl;
+
+    message *execute_request_message = get_execute(EXECUTE, name, argTypes, (const void **)args);
 
     return 0;
 }

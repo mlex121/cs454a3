@@ -15,6 +15,7 @@ class NetworkSender {
 
 protected:
     int send_message(message *m);
+    message* receive_reply();
 
 public:
     NetworkSender(char dest_hostname[MAX_HOSTNAME_LEN], char dest_port[MAX_PORT_LEN]);

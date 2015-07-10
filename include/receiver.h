@@ -36,7 +36,6 @@ class NetworkReceiver {
     void handle_client_data(int fd);
     void cleanup_fd(int fd);
     void handle_set_fd(int fd);
-    int send_reply(int fd, message *m);
 
     protected:
         std::unordered_map<int, message_assembly> received_messages;
@@ -45,6 +44,7 @@ class NetworkReceiver {
 
         virtual void extra_setup();
         virtual void process_message(int fd) = 0;
+        virtual int send_reply(int fd, message *m);
 
     public:
         char hostname[MAX_HOSTNAME_LEN];
