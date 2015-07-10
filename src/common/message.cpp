@@ -128,6 +128,7 @@ message *get_loc_failure(reason_code reasonCode) {
 }
 
 message *get_execute(const message_type m_type, const char *name, const int *argTypes, const void **args) {
+    //cerr << "Reply function name is: " << name << endl;
     message *m = new message;
 
     unsigned int argTypes_bytes = get_argtypes_len(argTypes) * sizeof(*argTypes);
@@ -158,9 +159,11 @@ message *get_execute(const message_type m_type, const char *name, const int *arg
         if (arg_len == 0) arg_len = 1;
         arg_len *= ARG_SIZES[get_argtype(*argTypes)];
 
+        /*
         cerr << "Argtype is: " << ARG_NAMES[get_argtype(*argTypes)];
         cerr << " args_len is: " << arg_len;
         cerr << endl;
+        */
 
         memcpy(m->buf + offset, (char *)(*args), arg_len);
         offset += arg_len;
@@ -187,8 +190,9 @@ message *get_execute_failure(reason_code reasonCode) {
     ((int *)m->buf)[0] = message_len;
     ((int *)m->buf)[1] = EXECUTE_FAILURE;
 
-    size_t offset = METADATA_LEN;
-    memcpy(m->buf + offset, (char *)reasonCode, sizeof(reason_code));
+    unsigned int offset = METADATA_LEN;
+    memcpy(m->buf + offset, (char *)&reasonCode, sizeof(reason_code));
+    offset += sizeof(reason_code);
 
     assert(message_len == offset);
 

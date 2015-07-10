@@ -19,8 +19,7 @@ class ServerSender : NetworkSender {
 
     public:
         ServerSender(char receiver_hostname[MAX_HOSTNAME_LEN], char receiver_port[MAX_PORT_LEN]);
-        int rpcRegister(char *name, int *argTypes, skeleton f);
-        int rpcExecute();
+        void rpcRegister(char *name, int *argTypes, skeleton f);
         void run();
         static void *dispatch(void *arg);
 };

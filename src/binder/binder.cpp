@@ -28,7 +28,7 @@ class BinderReceiver : public NetworkReceiver {
 
     protected:
         virtual void extra_setup();
-        virtual void process_message(int fd);
+        virtual void process_message(int fd, message *m);
 
     public:
         void print_registrations();
@@ -63,8 +63,6 @@ void BinderReceiver::print_registrations() {
 
 
 void BinderReceiver::process_registration(int fd, message *m) {
-    int message_length = *((int *)m);
-
     char hostname[MAX_HOSTNAME_LEN];
     char port[MAX_PORT_LEN];
     char name[MAX_FUNCTION_NAME_LEN];
@@ -113,7 +111,6 @@ void BinderReceiver::process_registration(int fd, message *m) {
 }
 
 void BinderReceiver::process_request(int fd, message *m) {
-    int message_length = *((int *)m);
 
     char name[MAX_FUNCTION_NAME_LEN];
 
@@ -149,10 +146,8 @@ void BinderReceiver::process_request(int fd, message *m) {
     }
 }
 
-void BinderReceiver::process_message(int fd) {
+void BinderReceiver::process_message(int fd, message *m) {
     //cerr << "A message was received with total length: " << received_messages[fd].offset << endl;
-
-    message *m = (message *)(&received_messages[fd].buf);
 
     //cerr << "Message type is: " << *((int *)(m->buf) + 1) << endl;
 
@@ -168,9 +163,6 @@ void BinderReceiver::process_message(int fd) {
             // TODO throw something
             break;
     }
-
-    delete[] received_messages[fd].buf;
-    received_messages.erase(fd);
 }
 
 int main(int argc, char **argv) {

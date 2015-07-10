@@ -25,6 +25,7 @@ find_package (Threads)
         src/client/client_sender.cpp
 
         src/server/rpc_server_funcs.cpp
+        src/server/server.cpp
         src/server/server_receiver.cpp
         src/server/server_sender.cpp
 

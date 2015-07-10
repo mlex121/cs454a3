@@ -43,7 +43,7 @@ class NetworkReceiver {
         struct sockaddr_in addr_info;
 
         virtual void extra_setup();
-        virtual void process_message(int fd) = 0;
+        virtual void process_message(int fd, message *m) = 0;
         virtual int send_reply(int fd, message *m);
 
     public:

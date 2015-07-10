@@ -144,7 +144,10 @@ void NetworkReceiver::handle_client_data(int fd) {
             received_messages[fd].offset += size;
 
             if (received_messages[fd].offset == *((int *)received_messages[fd].buf)) {
-                process_message(fd);
+                message *m = (message *)(&received_messages[fd].buf);
+                process_message(fd, m);
+                delete[] received_messages[fd].buf;
+                received_messages.erase(fd);
             }
         }
         else {

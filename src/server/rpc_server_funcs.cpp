@@ -1,39 +1,20 @@
+#include <iostream> //FIXME debugging only
+
 #include <pthread.h>
 #include <signal.h>
 
 #include "common_defs.h"
 #include "rpc.h"
-#include "server_receiver.h"
-#include "server_sender.h"
+#include "server.h"
 
 using namespace std;
 
-ServerSender *server_sender = NULL;
-ServerReceiver *server_receiver = NULL;
-
-void check_network_handlers() {
-    if (!server_receiver || !server_receiver) {
-      throw UNINITIALIZED_NETWORK_HANDLERS;
-    }
-}
-
 int rpcInit() {
-    int ret_val = 0;
-
-    if (!server_receiver && !server_sender) {
-        try {
-            server_receiver = new ServerReceiver();
-            server_sender = new ServerSender(server_receiver->hostname, server_receiver->port);
-        }
-        catch (ERRORS e) {
-            return e;
-        }
+    try {
+        Server::initialize();
     }
-    else if (server_receiver && server_sender) {
-        return ALREADY_INITIALIZED_NETWORK_HANDLERS;
-    }
-    else {
-        return UNINITIALIZED_NETWORK_HANDLERS;
+    catch (ERRORS e) {
+        return e;
     }
 
     return 0;
@@ -41,18 +22,22 @@ int rpcInit() {
 
 int rpcRegister(char* name, int* argTypes, skeleton f) {
     try {
-        check_network_handlers();
-        return server_sender->rpcRegister(name, argTypes, f);
+        Server::get_sender()->rpcRegister(name, argTypes, f);
     }
     catch (ERRORS e) {
         return e;
     }
+
+    return 0;
 }
 
 int rpcExecute() {
     try {
-        check_network_handlers();
-        //return server_receiver->rpcExecute();
+        // FIXME get the sender to start receiving as well for terminate?
+        // actually, what is supposed to happen for terminate exactly? 
+        // are the server supposed to keep open connections to the binder?
+        // 5 hosts max seems awfully low for this?????
+        Server::get_receiver()->run();
     }
     catch (ERRORS e) {
         return e;

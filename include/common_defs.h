@@ -54,14 +54,11 @@ enum message_type {
 enum reason_code {
     REASON_WRONG_ARGUMENTS,
     REASON_UNKNOWN_FUNCTION,
+    REASON_FUNCTION_RETURNED_ERROR,
     // more as necessary
 };
 
 struct message {
-    // I'm not actually sure how necessary these are, but have
-    // left message as a struct in case we need them, or anything else
-    //int length;
-    //message_type type;
     // Buf contains length followed by type, followed by message
     char *buf;
 };
@@ -74,7 +71,8 @@ enum ERRORS {
     UNINITIALIZED_NETWORK_HANDLERS,
 
     //Warnings start here
-    ALREADY_INITIALIZED_NETWORK_HANDLERS = 1
+    PREVIOUSLY_INITIALIZED_NETWORK_HANDLERS = 1,
+    PREVIOUSLY_REGISTERED_FUNCTION,
 };
 
 unsigned int get_argtypes_len(const int *argTypes);
