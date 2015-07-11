@@ -36,6 +36,7 @@ class ServerReceiver : public NetworkReceiver {
     public:
         void add_skeleton(char *name, int *argTypes, skeleton f);
         void rpcInit();
+        void terminate();
 };
 
 #endif

@@ -39,10 +39,20 @@ find_package (Threads)
 # -----------------------------
 
 
+# Replace the default add_executable function with one that automatically
+# links in the rpc library
+macro (add_executable _name)
+    # invoke built-in add_executable
+    _add_executable(${ARGV})
+    if (TARGET ${_name})
+        target_link_libraries(${_name} rpc)
+    endif()
+endmacro()
+
+
 #Binaries
 # -----------------------------
     add_executable(binder src/binder/binder.cpp)
-    TARGET_LINK_LIBRARIES(binder rpc)
 
     add_executable(
         server
@@ -50,18 +60,20 @@ find_package (Threads)
         src/test/server/server_function_skels.c
         src/test/server/server_functions.c
     )
-    TARGET_LINK_LIBRARIES(server rpc)
 
     add_executable(
         long_argtypes_server
         src/test/server/long_argtypes_server.c
     )
-    TARGET_LINK_LIBRARIES(long_argtypes_server rpc)
 
     add_executable(
         client        
         src/test/client/client.c
     )
-    TARGET_LINK_LIBRARIES(client rpc)
+
+    add_executable(
+        client_terminator
+        src/test/client/client_terminator.c
+    )
 
 # -----------------------------

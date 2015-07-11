@@ -64,11 +64,22 @@ struct message {
 };
 
 
-#define NUM_SENDER_ERRORS 100
+#define NUM_ERRORS 100
 
 enum ERRORS {
-    BINDER_NOT_FOUND = -1*NUM_SENDER_ERRORS, //all sender errors should have negative codes
-    UNINITIALIZED_NETWORK_HANDLERS,
+    //General
+    UNINITIALIZED_NETWORK_HANDLERS = -1*NUM_ERRORS,
+    UNRECOGNIZED_MESSAGE_TYPE,
+    NETWORK_ERROR,
+
+    //Binder
+
+    //Server
+    BINDER_NOT_FOUND,
+    REGISTRATION_AFTER_INITIALIZATION,
+
+    //Client
+    EXECUTION_FAILURE,
 
     //Warnings start here
     PREVIOUSLY_INITIALIZED_NETWORK_HANDLERS = 1,

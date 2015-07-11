@@ -123,6 +123,16 @@ int NetworkReceiver::safe_receive(int fd, char *buf, int len, int &size) {
     }
 }
 
+void NetworkReceiver::process_fd_if_message_complete(int fd) {
+    if (received_messages[fd].offset == *((int *)received_messages[fd].buf)) {
+        message *m = (message *)(&received_messages[fd].buf);
+        process_message(fd, m);
+
+        // Do not erase the message itself, process message is resposible for this
+        received_messages.erase(fd);
+    }
+}
+
 void NetworkReceiver::handle_client_data(int fd) {
     int size;
     char buf[MAX_SEND_SIZE];
@@ -143,13 +153,7 @@ void NetworkReceiver::handle_client_data(int fd) {
 
             received_messages[fd].offset += size;
 
-            if (received_messages[fd].offset == *((int *)received_messages[fd].buf)) {
-                message *m = (message *)(&received_messages[fd].buf);
-                process_message(fd, m);
-
-                // Do not erase the message itself, process message is resposible for this
-                received_messages.erase(fd);
-            }
+            process_fd_if_message_complete(fd);
         }
         else {
             //cerr << "Network error" << endl;
@@ -173,6 +177,8 @@ void NetworkReceiver::handle_client_data(int fd) {
 
             //cerr << "Message length is: " << message_length << endl;
             received_messages[fd] = a;
+
+            process_fd_if_message_complete(fd);
         }
         else {
             // TODO
@@ -220,21 +226,19 @@ void NetworkReceiver::handle_set_fd(int fd) {
     }
 }
 
-int NetworkReceiver::send_reply(int fd, message *m) {
+void NetworkReceiver::send_reply(int fd, message *m) {
     int size = ((int *)m->buf)[0];
     int offset = 0;
     int ret;
 
     while (offset != size) {
         if ((ret = send(fd, m->buf + offset, size - offset, 0)) == -1) {
-            perror("send");
-            return -1;
+            throw NETWORK_ERROR;
         }
 
         offset += ret;
     }
 
-    //FIXME free the message we just send back
-
-    return 0;
+    delete[] m->buf;
+    delete m;
 }

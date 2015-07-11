@@ -15,7 +15,8 @@ class ClientSender : NetworkSender {
     public:
         ClientSender();
         ClientSender(char* hostname, char* port);
-        int rpcCall(char *name, int *argTypes, void ** args);
+        void rpcCall(char *name, int *argTypes, void ** args);
+        void rpcTerminate();
 };
 
 #endif

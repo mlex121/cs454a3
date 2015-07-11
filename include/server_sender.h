@@ -17,6 +17,7 @@ class ServerSender : NetworkSender {
     public:
         ServerSender(char receiver_hostname[MAX_HOSTNAME_LEN], char receiver_port[MAX_PORT_LEN]);
         void rpcRegister(char *name, int *argTypes, skeleton f);
+        void await_termination();
 };
 
 #endif

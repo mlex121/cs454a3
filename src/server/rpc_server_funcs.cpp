@@ -1,5 +1,3 @@
-#include <iostream> //FIXME debugging only
-
 #include <pthread.h>
 #include <signal.h>
 
@@ -33,10 +31,7 @@ int rpcRegister(char* name, int* argTypes, skeleton f) {
 
 int rpcExecute() {
     try {
-        // FIXME get the sender to start receiving as well for terminate?
-        // actually, what is supposed to happen for terminate exactly? 
-        // are the server supposed to keep open connections to the binder?
-        // 5 hosts max seems awfully low for this?????
+        Server::get_sender()->await_termination();
         Server::get_receiver()->rpcInit();
     }
     catch (ERRORS e) {

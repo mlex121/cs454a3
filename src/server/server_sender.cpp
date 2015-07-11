@@ -3,6 +3,7 @@
 #include "server.h"
 #include "server_sender.h"
 
+#include <cassert>
 #include <iostream>
 
 #include <string.h>
@@ -21,6 +22,8 @@ ServerSender::ServerSender(char receiver_hostname[MAX_HOSTNAME_LEN], char receiv
 }
 
 void ServerSender::rpcRegister(char *name, int *argTypes, skeleton f) {
+    // This may throw a warning if a duplicate function 
+    // is already registered which means there is no need to contact the binder
     Server::get_receiver()->add_skeleton(name, argTypes, f);
 
     message *m = get_register_request(receiver_hostname, receiver_port, name, argTypes);
@@ -29,4 +32,14 @@ void ServerSender::rpcRegister(char *name, int *argTypes, skeleton f) {
 
     //Receive server reply
     // FIXME this is important
+}
+
+void ServerSender::await_termination() {
+    message *m = receive_reply();
+
+    // The only message we should receive from the binder after 
+    // we have finished registering is a terminate message
+    assert(*((int *)(m->buf) + 1) == TERMINATE);
+
+    Server::get_receiver()->terminate();
 }

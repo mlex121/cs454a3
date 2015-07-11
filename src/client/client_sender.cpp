@@ -24,7 +24,7 @@ ClientSender::ClientSender(char *hostname, char *port) :
 }
 
 
-int ClientSender::rpcCall(char *name, int *argTypes, void ** args) {
+void ClientSender::rpcCall(char *name, int *argTypes, void ** args) {
     message *location_request_message = get_loc_request(name, argTypes);
     send_message(location_request_message);
 
@@ -47,7 +47,7 @@ int ClientSender::rpcCall(char *name, int *argTypes, void ** args) {
             break;
         default:
             cerr << "Message type is: " << *((int *)(location_reply_message->buf) + 1) << endl;
-            return 1;
+            throw UNRECOGNIZED_MESSAGE_TYPE;
             break;
     }
 
@@ -98,15 +98,17 @@ int ClientSender::rpcCall(char *name, int *argTypes, void ** args) {
 
             break;
         case EXECUTE_FAILURE:
-            //FIXME error codes are a thing
-            return -1;
+            throw EXECUTION_FAILURE;
             break;
         default:
-            // FIXME throw and error - this should never happen
             cerr << "Message type is: " << *((int *)(location_reply_message->buf) + 1) << endl;
-            return 1;
+            throw UNRECOGNIZED_MESSAGE_TYPE;
             break;
     }
+}
 
-    return 0;
+void ClientSender::rpcTerminate() {
+    message *termination_message = get_terminate();
+    send_message(termination_message);
+
 }

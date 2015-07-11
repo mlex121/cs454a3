@@ -25,6 +25,10 @@ class BinderReceiver : public NetworkReceiver {
 
     void process_registration(int fd, message *m);
     void process_request(int fd, message *m);
+    void process_terminate();
+
+    // Variables used for termination
+    list<int> server_fds;
 
     protected:
         virtual void extra_setup();
@@ -98,6 +102,7 @@ void BinderReceiver::process_registration(int fd, message *m) {
 
     // Check the map to see if we have this function already registered
     if (function_locations.count(complete_function)) {
+            //FIXME is this true ???
             // We should not have this server already registered for this function
             // if this were the case, the server should have simply updated it local
             // database without sending a request to the binder
@@ -108,6 +113,9 @@ void BinderReceiver::process_registration(int fd, message *m) {
     else {
         function_locations[complete_function] = { server_location };
     }
+
+    // At ths server's file descriptor
+    server_fds.push_back(fd);
 }
 
 void BinderReceiver::process_request(int fd, message *m) {
@@ -146,9 +154,16 @@ void BinderReceiver::process_request(int fd, message *m) {
     }
 }
 
+void BinderReceiver::process_terminate() {
+    for (list<int>::iterator it = server_fds.begin(); it != server_fds.end(); it++) {
+        send_reply(*it, get_terminate());
+    }
+
+    exit(0);
+}
+
 void BinderReceiver::process_message(int fd, message *m) {
     //cerr << "A message was received with total length: " << received_messages[fd].offset << endl;
-
     //cerr << "Message type is: " << *((int *)(m->buf) + 1) << endl;
 
     switch (*((int *)(m->buf) + 1)) {
@@ -159,8 +174,11 @@ void BinderReceiver::process_message(int fd, message *m) {
         case LOC_REQUEST:
             process_request(fd, m);
             break;
+        case TERMINATE:
+            process_terminate();
+            break;
         default:
-            // TODO throw something
+            throw UNRECOGNIZED_MESSAGE_TYPE;
             break;
     }
 
