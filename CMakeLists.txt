@@ -56,24 +56,24 @@ endmacro()
 
     add_executable(
         server
-        src/test/server/server.c
-        src/test/server/server_function_skels.c
-        src/test/server/server_functions.c
+        test/server/server.c
+        test/server/server_function_skels.c
+        test/server/server_functions.c
     )
 
     add_executable(
         long_argtypes_server
-        src/test/server/long_argtypes_server.c
+        test/server/long_argtypes_server.c
     )
 
     add_executable(
         client        
-        src/test/client/client.c
+        test/client/client.c
     )
 
     add_executable(
         client_terminator
-        src/test/client/client_terminator.c
+        test/client/client_terminator.c
     )
 
 # -----------------------------
