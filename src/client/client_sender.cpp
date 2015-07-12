@@ -166,7 +166,7 @@ void ClientSender::rpcCacheCall(char *name, int *argTypes, void **args) {
                 throw (ERRORS)ret_val;
             }
             else {
-                //Do nothing:w
+                //Do nothing
             }
         }
     }
@@ -201,7 +201,7 @@ void ClientSender::rpcCacheCall(char *name, int *argTypes, void **args) {
             // Without any cached locations we don't have more to do.
             return;
         default:
-            std::cerr << "Message type is: " << *((int *)(cache_reply_message->buf) + 1) << std::endl;
+            //std::cerr << "Message type is: " << *((int *)(cache_reply_message->buf) + 1) << std::endl;
             throw UNRECOGNIZED_MESSAGE_TYPE;
             // Without any cached locations we don't have more to do.
             return;
@@ -217,9 +217,16 @@ void ClientSender::rpcCacheCall(char *name, int *argTypes, void **args) {
     {
         const char *hostname = server_loc_it->first.c_str();
         const char *port = server_loc_it->second.c_str();
-        if (execute(hostname, port, name, argTypes, args) == EXECUTE_SUCCESS) {
+        int ret_val = execute(hostname, port, name, argTypes, args);
+        if (ret_val == EXECUTE_SUCCESS) {
             // We're done, no need to try any other servers
             return;
+        }
+        else if (ret_val != FUNCTION_NOT_FOUND) {
+            throw (ERRORS)ret_val;
+        }
+        else {
+            //Do nothing
         }
     }
 }
