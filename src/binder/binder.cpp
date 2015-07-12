@@ -1,8 +1,6 @@
 #include <algorithm>
 #include <iostream>
 #include <list>
-#include <map>
-#include <set>
 #include <utility>
 
 #include <cassert>
@@ -12,23 +10,22 @@
 #include "rpc.h"
 #include "receiver.h"
 
-using namespace std;
-
-typedef pair<string, string> ServerLocation;
-typedef map<CompleteFunction, set<ServerLocation>> FunctionLocations;
+// Name conflict on OS X with get_terminate()
+// using namespace std;
 
 class BinderReceiver : public NetworkReceiver {
-    list<ServerLocation> server_priorities;
-    
+    std::list<ServerLocation> server_priorities;
+
     // using unordered types requires setting up a custom hash function
     FunctionLocations function_locations;
 
     void process_registration(int fd, message *m);
     void process_request(int fd, message *m);
+    void process_cache_request(int fd, message *m);
     void process_terminate();
 
     // Variables used for termination
-    list<int> server_fds;
+    std::list<int> server_fds;
 
     protected:
         virtual void extra_setup();
@@ -39,8 +36,8 @@ class BinderReceiver : public NetworkReceiver {
 };
 
 void BinderReceiver::extra_setup() {
-    cout << "BINDER_ADDRESS " << hostname << endl;
-    cout << "BINDER_PORT " << port << endl;
+    std::cout << "BINDER_ADDRESS " << hostname << std::endl;
+    std::cout << "BINDER_PORT " << port << std::endl;
 }
 
 void BinderReceiver::print_registrations() {
@@ -55,7 +52,7 @@ void BinderReceiver::print_registrations() {
         //cerr << "Servers: " << endl;
 
         for (
-            set<ServerLocation>::iterator server_loc_it=func_loc_it->second.begin();
+            std::set<ServerLocation>::iterator server_loc_it=func_loc_it->second.begin();
             server_loc_it != func_loc_it->second.end();
             server_loc_it++
         )
@@ -86,11 +83,11 @@ void BinderReceiver::process_registration(int fd, message *m) {
     //cerr << "Port is: " << port << endl;
     //cerr << "Name is: " << name << endl;
 
-    string arguments = get_argTypes_string((int *)(m->buf + offset));
-    //cerr << "Arguments :" << arguments << endl;
+    std::string arguments = get_argTypes_string((int *)(m->buf + offset));
+    //cerr << "Arguments :" << arguments << std::endl;
 
-    CompleteFunction complete_function = make_pair(name, arguments);
-    ServerLocation server_location = make_pair(hostname, port);
+    CompleteFunction complete_function = std::make_pair(name, arguments);
+    ServerLocation server_location = std::make_pair(hostname, port);
 
     // First, make sure we don't have an entry for this server already
     // otherwise, insert it at the head of the list so it serves first
@@ -98,7 +95,7 @@ void BinderReceiver::process_registration(int fd, message *m) {
         server_priorities.push_front(server_location);
     }
 
-    // Check the map to see if we have this function already registered
+    // Check the std::map to see if we have this function already registered
     if (function_locations.count(complete_function)) {
             assert(! function_locations[complete_function].count(server_location));
 
@@ -124,13 +121,13 @@ void BinderReceiver::process_request(int fd, message *m) {
     offset += MAX_FUNCTION_NAME_LEN;
 
 
-    string arguments = get_argTypes_string((int *)(m->buf + offset));
-    CompleteFunction complete_function = make_pair(name, arguments);
+    std::string arguments = get_argTypes_string((int *)(m->buf + offset));
+    CompleteFunction complete_function = std::make_pair(name, arguments);
 
 
     ServerLocation *s = NULL;
 
-    for (list<ServerLocation>::iterator it = server_priorities.begin(); it != server_priorities.end(); it++) {
+    for (std::list<ServerLocation>::iterator it = server_priorities.begin(); it != server_priorities.end(); it++) {
         if (function_locations[complete_function].count(*it)) {
             server_priorities.push_back(*it);
             server_priorities.erase(it);
@@ -147,8 +144,26 @@ void BinderReceiver::process_request(int fd, message *m) {
     }
 }
 
+void BinderReceiver::process_cache_request(int fd, message *m) {
+    char name[MAX_FUNCTION_NAME_LEN];
+
+    unsigned int offset = METADATA_LEN;
+
+    strncpy(name, m->buf + offset, MAX_FUNCTION_NAME_LEN);
+    offset += MAX_FUNCTION_NAME_LEN;
+
+    std::string arguments = get_argTypes_string((int *)(m->buf + offset));
+    CompleteFunction complete_function = std::make_pair(name, arguments);
+
+    if (function_locations.count(complete_function)) {
+        send_reply(fd, get_cache_loc_success(function_locations[complete_function]));
+    } else {
+        send_reply(fd, get_cache_loc_failure(REASON_NO_MATCHING_SERVERS));
+    }
+}
+
 void BinderReceiver::process_terminate() {
-    for (list<int>::iterator it = server_fds.begin(); it != server_fds.end(); it++) {
+    for (std::list<int>::iterator it = server_fds.begin(); it != server_fds.end(); it++) {
         send_reply(*it, get_terminate());
     }
 
@@ -156,8 +171,8 @@ void BinderReceiver::process_terminate() {
 }
 
 void BinderReceiver::process_message(int fd, message *m) {
-    //cerr << "A message was received with total length: " << received_messages[fd].offset << endl;
-    //cerr << "Message type is: " << *((int *)(m->buf) + 1) << endl;
+    //cerr << "A message was received with total length: " << received_messages[fd].offset << std::endl;
+    //cerr << "Message type is: " << *((int *)(m->buf) + 1) << std::endl;
 
     switch (*((int *)(m->buf) + 1)) {
         case REGISTER:
@@ -165,6 +180,9 @@ void BinderReceiver::process_message(int fd, message *m) {
             break;
         case LOC_REQUEST:
             process_request(fd, m);
+            break;
+        case CACHE_LOC_REQUEST:
+            process_cache_request(fd, m);
             break;
         case TERMINATE:
             process_terminate();
@@ -178,7 +196,7 @@ void BinderReceiver::process_message(int fd, message *m) {
 }
 
 int main(int argc, char **argv) {
-    BinderReceiver b; 
+    BinderReceiver b;
 
     b.run();
 

@@ -148,6 +148,90 @@ message *get_loc_failure(reason_code reasonCode) {
     return m;
 }
 
+message *get_cache_loc_request(const char *name, const int *argTypes) {
+    message *m = new message;
+
+    size_t argTypes_bytes = get_argtypes_len(argTypes) * sizeof(*argTypes);
+
+    int message_len = (
+        METADATA_LEN +
+        MAX_FUNCTION_NAME_LEN +
+        argTypes_bytes
+    );
+
+    m->buf = new char[message_len];
+
+    ((int *)m->buf)[0] = message_len;
+    ((int *)m->buf)[1] = CACHE_LOC_REQUEST;
+
+    unsigned int offset = METADATA_LEN;
+
+    strncpy(m->buf + offset, name, MAX_FUNCTION_NAME_LEN);
+    offset += MAX_FUNCTION_NAME_LEN;
+
+    memcpy(m->buf + offset, (char *)argTypes, argTypes_bytes);
+    offset += argTypes_bytes;
+
+    assert(message_len == offset);
+    return m;
+}
+
+message *get_cache_loc_success(std::set<ServerLocation> locations) {
+    message *m = new message;
+
+    size_t hostname_bytes = (MAX_HOSTNAME_LEN + MAX_PORT_LEN) * locations.size();
+
+    int message_len = (
+        METADATA_LEN +
+        hostname_bytes
+    );
+
+    m->buf = new char[message_len];
+
+    ((int *)m->buf)[0] = message_len;
+    ((int *)m->buf)[1] = CACHE_LOC_SUCCESS;
+
+    unsigned int offset = METADATA_LEN;
+
+    for (
+        std::set<ServerLocation>::iterator it = locations.begin();
+        it != locations.end();
+        ++it
+    )
+    {
+        strncpy(m->buf + offset, it->first.c_str(), MAX_HOSTNAME_LEN);
+        offset += MAX_HOSTNAME_LEN;
+        strncpy(m->buf + offset, it->second.c_str(), MAX_PORT_LEN);
+        offset += MAX_PORT_LEN;
+    }
+
+    assert(message_len == offset);
+    return m;
+}
+
+message *get_cache_loc_failure(reason_code reasonCode) {
+    message *m = new message;
+
+    int message_len = (
+        METADATA_LEN +
+        sizeof(reason_code)
+    );
+
+    m->buf = new char[message_len];
+
+    ((int *)m->buf)[0] = message_len;
+    ((int *)m->buf)[1] = CACHE_LOC_FAILURE;
+
+    unsigned int offset = METADATA_LEN;
+    memcpy(m->buf + offset, (char *)&reasonCode, sizeof(reason_code));
+    offset += sizeof(reason_code);
+
+    assert(message_len == offset);
+
+    return m;
+}
+
+
 message *get_execute(const message_type m_type, const char *name, const int *argTypes, const void **args) {
     //cerr << "Reply function name is: " << name << endl;
     message *m = new message;
@@ -158,7 +242,7 @@ message *get_execute(const message_type m_type, const char *name, const int *arg
     int message_len = (
         METADATA_LEN +
         MAX_FUNCTION_NAME_LEN +
-        argTypes_bytes + 
+        argTypes_bytes +
         args_bytes
     );
 
@@ -176,7 +260,7 @@ message *get_execute(const message_type m_type, const char *name, const int *arg
     offset += argTypes_bytes;
 
     while (*argTypes) {
-        unsigned int arg_len = *argTypes & ARG_LEN_MASK; 
+        unsigned int arg_len = *argTypes & ARG_LEN_MASK;
         if (arg_len == 0) arg_len = 1;
         arg_len *= ARG_SIZES[get_argtype(*argTypes)];
 

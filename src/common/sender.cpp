@@ -9,7 +9,7 @@
 
 using namespace std;
 
-NetworkSender::NetworkSender(char dest_hostname[MAX_HOSTNAME_LEN], char dest_port[MAX_PORT_LEN]) :
+NetworkSender::NetworkSender(const char dest_hostname[MAX_HOSTNAME_LEN], const char dest_port[MAX_PORT_LEN]) :
     sock_fd(-1)
 {
     strncpy(this->dest_hostname,    dest_hostname,  MAX_HOSTNAME_LEN);
@@ -81,7 +81,7 @@ void NetworkSender::send_message(message *m) {
 }
 
 message* NetworkSender::receive_reply() {
-    int size; 
+    int size;
     int offset = 0;
     char buf[MAX_SEND_SIZE];
 

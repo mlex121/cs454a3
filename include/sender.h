@@ -18,7 +18,7 @@ protected:
     message* receive_reply();
 
 public:
-    NetworkSender(char dest_hostname[MAX_HOSTNAME_LEN], char dest_port[MAX_PORT_LEN]);
+    NetworkSender(const char dest_hostname[MAX_HOSTNAME_LEN], const char dest_port[MAX_PORT_LEN]);
 };
 
 #endif // SENDER_H

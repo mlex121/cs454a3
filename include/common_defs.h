@@ -3,6 +3,8 @@
 
 #include <string>
 #include <utility>
+#include <map>
+#include <set>
 
 #include "rpc.h"
 
@@ -35,6 +37,9 @@ extern char const *ARG_NAMES[];
 // Fully qualified with type arguments, used in binder and server databases
 typedef std::pair<std::string, std::string> CompleteFunction;
 
+typedef std::pair<std::string, std::string> ServerLocation;
+typedef std::map<CompleteFunction, std::set<ServerLocation>> FunctionLocations;
+
 enum message_type {
     REGISTER,
     REGISTER_SUCCESS,
@@ -48,7 +53,11 @@ enum message_type {
     EXECUTE_SUCCESS,
     EXECUTE_FAILURE,
 
-    TERMINATE
+    TERMINATE,
+
+    CACHE_LOC_REQUEST,
+    CACHE_LOC_SUCCESS,
+    CACHE_LOC_FAILURE
 };
 
 enum reason_code {
@@ -88,7 +97,7 @@ enum ERRORS {
     UNKNOWN_REASON,
 
     //Warnings start here
-    
+
     //Server
     FUNCTION_REREGISTRATION = 0,
     PREVIOUSLY_INITIALIZED_NETWORK_HANDLERS = 1,
