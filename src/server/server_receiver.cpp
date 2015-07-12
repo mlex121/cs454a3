@@ -28,8 +28,7 @@ void ServerReceiver::rpcInit() {
         pthread_t tid;
         int ret = pthread_create(&tid, NULL, &ServerReceiver::process_execute, (void *)(this));
         if (ret) {
-            // FIXME throw something
-            cout << "Error: Unable to spawn worker thread." << endl;
+            // throw something - not strictly necessary, we can lose a couple of workers
         }
 
         workers[i] = tid;
@@ -48,11 +47,9 @@ void ServerReceiver::add_skeleton(char *name, int *argTypes, skeleton f) {
     // Set the location to our current function regardless
     skeleton_locations[c] = f;
 
-    // FIXME
-    // check the spec for clarity on this
-    // If we had a previous function, throw a warning
+    // If we had a previous function registered with identical arguments, throw a warning
     if (count) {
-        throw  PREVIOUSLY_REGISTERED_FUNCTION;
+        throw  DUPLICATE_FUNCTION_REGISTRATION;
     }
 }
 
@@ -61,13 +58,10 @@ void *ServerReceiver::process_execute(void *arg) {
 
     while(true)  {
         sem_wait(&execute_request_read_avail);
-        cerr << "PROC GOT SEM" << endl;
         execute_request e = sr->execute_requests.front();
         sr->execute_requests.pop_front();
-
         sem_post(&execute_request_write_avail);
 
-        cerr << "Running" << endl;
 
         message *m = e.m;
         char name[MAX_FUNCTION_NAME_LEN];
@@ -93,18 +87,11 @@ void *ServerReceiver::process_execute(void *arg) {
             if (arg_len == 0) arg_len = 1;
             arg_len *= ARG_SIZES[get_argtype(*argTypes_iterator)];
 
-            //cerr << "Arg_len is " << arg_len ;
-            //cerr << " Argtype is: " << ARG_NAMES[get_argtype(*argTypes_iterator)];
-            //cerr << endl;
-
             offset += arg_len;
             
             args_iterator++;
             argTypes_iterator++;
         }
-
-        //cerr << "Name is " << name << endl;
-        //cerr << "Arg Count is " << arg_count << endl;
 
         assert(offset == *((int *)m->buf));
 
@@ -114,16 +101,15 @@ void *ServerReceiver::process_execute(void *arg) {
         if(it != sr->skeleton_locations.end()) {
             int ret_val = it->second(argTypes, args);
 
-            if (!ret_val) {
+            if (ret_val >= 0) {
                 sr->send_reply(e.fd, get_execute(EXECUTE_SUCCESS, name, argTypes, (const void **)args));
             }
             else {
-                cerr << "Sending back execute failure" << endl;
                 sr->send_reply(e.fd, get_execute_failure(REASON_FUNCTION_RETURNED_ERROR));
             }
         }
         else {
-            //FIXME function not found
+            sr->send_reply(e.fd, get_execute_failure(REASON_UNKNOWN_FUNCTION));
         }
 
         delete m->buf;
@@ -138,12 +124,9 @@ void ServerReceiver::process_message(int fd, message *m) {
             e.fd = fd;
             e.m = m;
 
-            cerr << "Waiting on sem" << endl;
             sem_wait(&execute_request_write_avail);
-            cerr << "Got sem" << endl;
             execute_requests.push_back(e);
             sem_post(&execute_request_read_avail);
-            cerr << "Done sem" << endl;
 
             break;
         case TERMINATE:

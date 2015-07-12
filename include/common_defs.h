@@ -52,10 +52,13 @@ enum message_type {
 };
 
 enum reason_code {
-    REASON_WRONG_ARGUMENTS,
+    //Binder
+    REASON_NO_MATCHING_SERVERS,
+    REGISTRATION_SUCCESSFUL,
+
+    //Server
     REASON_UNKNOWN_FUNCTION,
     REASON_FUNCTION_RETURNED_ERROR,
-    // more as necessary
 };
 
 struct message {
@@ -68,26 +71,27 @@ struct message {
 
 enum ERRORS {
     //General
-    UNINITIALIZED_NETWORK_HANDLERS = -1*NUM_ERRORS,
+    NETWORK_ERROR = -1*NUM_ERRORS,
     UNRECOGNIZED_MESSAGE_TYPE,
-    NETWORK_ERROR,
 
     //Binder
+    // The binder should not throw any errors
 
     //Server
+    UNINITIALIZED_NETWORK_HANDLERS,
     REGISTRATION_AFTER_INITIALIZATION,
 
     //Client
     NO_MATCHING_SERVERS,
     FUNCTION_NOT_FOUND,
     EXECUTION_FAILURE,
+    UNKNOWN_REASON,
 
     //Warnings start here
+    
+    //Server
     PREVIOUSLY_INITIALIZED_NETWORK_HANDLERS = 1,
-    PREVIOUSLY_REGISTERED_FUNCTION,
-
-    //Client
-    EXECUTION_WARNING,
+    DUPLICATE_FUNCTION_REGISTRATION,
 };
 
 unsigned int get_argtypes_len(const int *argTypes);

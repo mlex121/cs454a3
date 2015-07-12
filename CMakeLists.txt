@@ -68,13 +68,32 @@ endmacro()
     )
 
     add_executable(
+        server2
+        test/server/server2.c
+        test/server/server_function_skels.c
+        test/server/server_functions.c
+    )
+
+    add_executable(
         long_argtypes_server
         test/server/long_argtypes_server.c
     )
 
     add_executable(
+        server_error
+        test/server/server_error.c
+        test/server/server_function_skels.c
+        test/server/server_functions.c
+    )
+
+    add_executable(
         client        
         test/client/client.c
+    )
+
+    add_executable(
+        client_round_robin
+        test/client/client_round_robin.c
     )
 
     add_executable(
@@ -85,6 +104,11 @@ endmacro()
     add_executable(
         client_long
         test/client/client_long.c
+    )
+
+    add_executable(
+        client_error
+        test/client/client_error.c
     )
 
 # -----------------------------

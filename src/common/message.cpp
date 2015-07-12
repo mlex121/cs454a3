@@ -71,10 +71,30 @@ message* get_loc_request(const char *name, const int *argTypes) {
 
     assert(message_len == offset);
 
-    /*
-    cerr << "Message length is: " << message_len << endl;
-    cerr << "Message type is: " << LOC_REQUEST << endl;
-    */
+    //cerr << "Message length is: " << message_len << endl;
+    //cerr << "Message type is: " << LOC_REQUEST << endl;
+
+    return m;
+}
+
+message *get_register_success(reason_code reasonCode) {
+    message *m = new message;
+
+    int message_len = (
+        METADATA_LEN +
+        sizeof(reason_code)
+    );
+
+    m->buf = new char[message_len];
+
+    ((int *)m->buf)[0] = message_len;
+    ((int *)m->buf)[1] = REGISTER_SUCCESS;
+
+    unsigned int offset = METADATA_LEN;
+    memcpy(m->buf + offset, (char *)&reasonCode, sizeof(reason_code));
+    offset += sizeof(reason_code);
+
+    assert(message_len == offset);
 
     return m;
 }
@@ -119,8 +139,9 @@ message *get_loc_failure(reason_code reasonCode) {
     ((int *)m->buf)[0] = message_len;
     ((int *)m->buf)[1] = LOC_FAILURE;
 
-    size_t offset = METADATA_LEN;
-    memcpy(m->buf + offset, (char *)reasonCode, sizeof(reason_code));
+    unsigned int offset = METADATA_LEN;
+    memcpy(m->buf + offset, (char *)&reasonCode, sizeof(reason_code));
+    offset += sizeof(reason_code);
 
     assert(message_len == offset);
 
@@ -159,11 +180,9 @@ message *get_execute(const message_type m_type, const char *name, const int *arg
         if (arg_len == 0) arg_len = 1;
         arg_len *= ARG_SIZES[get_argtype(*argTypes)];
 
-        /*
-        cerr << "Argtype is: " << ARG_NAMES[get_argtype(*argTypes)];
-        cerr << " args_len is: " << arg_len;
-        cerr << endl;
-        */
+        //cerr << "Argtype is: " << ARG_NAMES[get_argtype(*argTypes)];
+        //cerr << " args_len is: " << arg_len;
+        //cerr << endl;
 
         memcpy(m->buf + offset, (char *)(*args), arg_len);
         offset += arg_len;

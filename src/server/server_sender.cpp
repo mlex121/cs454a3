@@ -27,12 +27,19 @@ void ServerSender::rpcRegister(char *name, int *argTypes, skeleton f) {
     // is already registered which means there is no need to contact the binder
     Server::get_receiver()->add_skeleton(name, argTypes, f);
 
-    message *m = get_register_request(receiver_hostname, receiver_port, name, argTypes);
+    message *register_request = get_register_request(receiver_hostname, receiver_port, name, argTypes);
 
-    send_message(m);
+    send_message(register_request);
 
     //Receive server reply
-    // FIXME this is important
+    // Note that the binder will never actually return anything other than sucess,
+    // because duplicate functions are caught at the server side
+    message *register_request_reply = receive_reply();
+
+    assert(*((int *)register_request_reply->buf + 1) == REGISTER_SUCCESS);
+
+    delete[] register_request_reply->buf;
+    delete register_request_reply;
 }
 
 void term(int signum) {

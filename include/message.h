@@ -4,6 +4,7 @@
 #include "common_defs.h"
 
 message* get_register_request(const char *hostname, const char *port, const char *name, const int *argTypes);
+message *get_register_success(reason_code reasonCode);
 
 message* get_loc_request(const char *name, const int *argTypes);
 message *get_loc_success(const char *hostname, const char *port);

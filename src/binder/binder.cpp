@@ -51,8 +51,8 @@ void BinderReceiver::print_registrations() {
     )
     {
         CompleteFunction c = func_loc_it->first;
-        cerr << "Name: " << c.first << " Args: " << c.second << endl;
-        cerr << "Servers: " << endl;
+        //cerr << "Name: " << c.first << " Args: " << c.second << endl;
+        //cerr << "Servers: " << endl;
 
         for (
             set<ServerLocation>::iterator server_loc_it=func_loc_it->second.begin();
@@ -60,7 +60,7 @@ void BinderReceiver::print_registrations() {
             server_loc_it++
         )
         {
-            cerr << '\t' << server_loc_it->first << ":" << server_loc_it->second << endl;
+            //cerr << '\t' << server_loc_it->first << ":" << server_loc_it->second << endl;
         }
     }
 }
@@ -82,11 +82,9 @@ void BinderReceiver::process_registration(int fd, message *m) {
     strncpy(name, m->buf + offset, MAX_FUNCTION_NAME_LEN);
     offset += MAX_FUNCTION_NAME_LEN;
 
-    /*
-    cerr << "Hostname is: " << hostname << endl;
-    cerr << "Port is: " << port << endl;
-    cerr << "Name is: " << name << endl;
-    */
+    //cerr << "Hostname is: " << hostname << endl;
+    //cerr << "Port is: " << port << endl;
+    //cerr << "Name is: " << name << endl;
 
     string arguments = get_argTypes_string((int *)(m->buf + offset));
     //cerr << "Arguments :" << arguments << endl;
@@ -102,10 +100,6 @@ void BinderReceiver::process_registration(int fd, message *m) {
 
     // Check the map to see if we have this function already registered
     if (function_locations.count(complete_function)) {
-            //FIXME is this true ???
-            // We should not have this server already registered for this function
-            // if this were the case, the server should have simply updated it local
-            // database without sending a request to the binder
             assert(! function_locations[complete_function].count(server_location));
 
             function_locations[complete_function].insert(server_location);
@@ -114,8 +108,11 @@ void BinderReceiver::process_registration(int fd, message *m) {
         function_locations[complete_function] = { server_location };
     }
 
-    // At ths server's file descriptor
+    // Add this server's file descriptor, so we can send a terminate message to it
     server_fds.push_back(fd);
+
+    //Send back a sucess message to the server
+    send_reply(fd, get_register_success(REGISTRATION_SUCCESSFUL));
 }
 
 void BinderReceiver::process_request(int fd, message *m) {
@@ -143,16 +140,10 @@ void BinderReceiver::process_request(int fd, message *m) {
     }
 
     if (s) {
-        cerr << "Hostname: " << s->first << " Port: " << s->second << endl;
         send_reply(fd, get_loc_success(s->first.c_str(), s->second.c_str()));
     }
     else {
-        print_registrations();
-        cerr << "Name is: " << name << endl;
-        cerr << "Arguments :" << arguments << endl;
-
-        cerr << "FAIL" << endl;
-
+        send_reply(fd, get_loc_failure(REASON_NO_MATCHING_SERVERS));
     }
 }
 

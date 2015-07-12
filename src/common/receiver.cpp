@@ -83,8 +83,6 @@ void NetworkReceiver::run() {
     while(true) {
         current_fds = master_fds; // copy it
         if (select(max_fd+1, &current_fds, NULL, NULL, NULL) == -1) {
-            //perror("select");
-            exit(4);
         }
 
         for(int i = 0; i <= max_fd; i++) {
@@ -100,9 +98,8 @@ void NetworkReceiver::cleanup_fd(int fd) {
     close(fd);
     FD_CLR(fd, &master_fds);
 
-    // Remove the client from the received_messages buffer
-    // and free and data in that buffer
-    // FIXME implement this
+    delete[] received_messages[fd].buf;
+    received_messages.erase(fd);
 }
 
 int NetworkReceiver::safe_receive(int fd, char *buf, int len, int &size) {
@@ -156,8 +153,7 @@ void NetworkReceiver::handle_client_data(int fd) {
             process_fd_if_message_complete(fd);
         }
         else {
-            //cerr << "Network error" << endl;
-            // TODO throw something
+            //throw NETWORK_ERROR;
         }
     }
     else {
@@ -181,8 +177,7 @@ void NetworkReceiver::handle_client_data(int fd) {
             process_fd_if_message_complete(fd);
         }
         else {
-            // TODO
-            // throw something
+            //throw NETWORK_ERROR;
         }
     }
 }
@@ -217,7 +212,7 @@ void NetworkReceiver::handle_set_fd(int fd) {
                 */
         }
         else {
-                //perror("accept");
+            // throw NETWORK_ERROR;
         }
     }
     // Data is from a client
@@ -233,7 +228,7 @@ void NetworkReceiver::send_reply(int fd, message *m) {
 
     while (offset != size) {
         if ((ret = send(fd, m->buf + offset, size - offset, 0)) == -1) {
-            throw NETWORK_ERROR;
+            //throw NETWORK_ERROR;
         }
 
         offset += ret;

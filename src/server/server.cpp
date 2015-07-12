@@ -9,8 +9,6 @@ void Server::initialize() {
         throw PREVIOUSLY_INITIALIZED_NETWORK_HANDLERS;
     }
 
-    // TODO is this right?
-    // Let partial initializations happen
     if (!server_receiver) server_receiver = new ServerReceiver();
     if (!server_sender) server_sender = new ServerSender(server_receiver->hostname, server_receiver->port);
 };

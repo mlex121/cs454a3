@@ -46,9 +46,8 @@ void ClientSender::rpcCall(char *name, int *argTypes, void ** args) {
 
             break;
         case LOC_FAILURE:
-            throw FUNCTION_NOT_FOUND;
+            throw NO_MATCHING_SERVERS;
         default:
-            cerr << "Message type is: " << *((int *)(location_reply_message->buf) + 1) << endl;
             throw UNRECOGNIZED_MESSAGE_TYPE;
             break;
     }
@@ -70,6 +69,7 @@ void ClientSender::rpcCall(char *name, int *argTypes, void ** args) {
     char reply_function_name[MAX_FUNCTION_NAME_LEN];
     unsigned int argTypes_bytes;
     unsigned int arg_len; 
+    reason_code reason;
     
     switch (*((int *)(execute_reply_message->buf) + 1)) {
         case EXECUTE_SUCCESS:
@@ -100,7 +100,19 @@ void ClientSender::rpcCall(char *name, int *argTypes, void ** args) {
 
             break;
         case EXECUTE_FAILURE:
-            //FIXME more detail, depending on reasonCode
+            memcpy(&reason, execute_reply_message->buf + METADATA_LEN, sizeof(reason_code));
+
+            switch (reason) {
+                case REASON_UNKNOWN_FUNCTION:
+                    throw FUNCTION_NOT_FOUND;
+                    break;
+                case REASON_FUNCTION_RETURNED_ERROR:
+                    throw EXECUTION_FAILURE;
+                    break;
+                default:
+                    throw UNKNOWN_REASON;
+                    break;
+            }
             break;
         default:
             throw UNRECOGNIZED_MESSAGE_TYPE;

@@ -24,8 +24,7 @@ NetworkSender::NetworkSender(char dest_hostname[MAX_HOSTNAME_LEN], char dest_por
     int ret = getaddrinfo(dest_hostname, dest_port, &hints, &servinfo);
 
     if (ret != 0) {
-        cerr << "getaddrinfo: " << gai_strerror(ret) << endl;
-        exit(1);
+        throw NETWORK_ERROR;
     }
 
     struct addrinfo *p = NULL;
@@ -46,8 +45,7 @@ NetworkSender::NetworkSender(char dest_hostname[MAX_HOSTNAME_LEN], char dest_por
     }
 
     if (p == NULL) {
-        cerr << "client: failed to connect" << endl;
-        exit(1);
+        throw NETWORK_ERROR;
     }
 
     /*
@@ -58,7 +56,7 @@ NetworkSender::NetworkSender(char dest_hostname[MAX_HOSTNAME_LEN], char dest_por
         sizeof(remoteIP)
     );
 
-    cout << "client: connected to " << remoteIP << " on port " << port << endl;
+    //cout << "client: connected to " << remoteIP << " on port " << port << endl;
     */
 
     freeaddrinfo(servinfo);

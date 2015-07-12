@@ -48,12 +48,10 @@ unsigned int get_args_len(const int *argTypes) {
     unsigned int len = 0;
 
     while (*argTypes) {
-        /*
-        cout << "Argtype is: " << (get_argtype(*argTypes));
-        cout << " Size is: " << (ARG_SIZES[get_argtype(*argTypes)]);
-        cout << " Len is: " << (*argTypes & ARG_LEN_MASK);
-        cout << endl;
-        */
+        //cout << "Argtype is: " << (get_argtype(*argTypes));
+        //cout << " Size is: " << (ARG_SIZES[get_argtype(*argTypes)]);
+        //cout << " Len is: " << (*argTypes & ARG_LEN_MASK);
+        //cout << endl;
 
         unsigned int arg_len = *argTypes & ARG_LEN_MASK;
         if (arg_len == 0) arg_len = 1;
