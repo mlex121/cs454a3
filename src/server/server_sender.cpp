@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <signal.h>
 
 using namespace std;
 
@@ -34,12 +35,29 @@ void ServerSender::rpcRegister(char *name, int *argTypes, skeleton f) {
     // FIXME this is important
 }
 
+void term(int signum) {
+    exit(0);
+
+}
+
 void ServerSender::await_termination() {
-    message *m = receive_reply();
 
-    // The only message we should receive from the binder after 
-    // we have finished registering is a terminate message
-    assert(*((int *)(m->buf) + 1) == TERMINATE);
+    // Setup a termination handler for the parent process
+    struct sigaction action;
+    memset(&action, 0, sizeof(struct sigaction));
+    action.sa_handler = term;
+    sigaction(SIGTERM, &action, NULL);
 
-    Server::get_receiver()->terminate();
+    pid_t pID = fork();
+
+    if (!pID) {
+        message *m = receive_reply();
+
+        // The only message we should receive from the binder after 
+        // we have finished registering is a terminate message
+        assert(*((int *)(m->buf) + 1) == TERMINATE);
+
+        kill(getppid(), SIGTERM);
+        exit(0);
+    }
 }

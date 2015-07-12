@@ -119,7 +119,6 @@ void BinderReceiver::process_registration(int fd, message *m) {
 }
 
 void BinderReceiver::process_request(int fd, message *m) {
-
     char name[MAX_FUNCTION_NAME_LEN];
 
     unsigned int offset = METADATA_LEN;
@@ -127,12 +126,10 @@ void BinderReceiver::process_request(int fd, message *m) {
     strncpy(name, m->buf + offset, MAX_FUNCTION_NAME_LEN);
     offset += MAX_FUNCTION_NAME_LEN;
 
-    cerr << "Name is: " << name << endl;
 
     string arguments = get_argTypes_string((int *)(m->buf + offset));
     CompleteFunction complete_function = make_pair(name, arguments);
 
-    //cerr << "Arguments :" << arguments << endl;
 
     ServerLocation *s = NULL;
 
@@ -150,6 +147,11 @@ void BinderReceiver::process_request(int fd, message *m) {
         send_reply(fd, get_loc_success(s->first.c_str(), s->second.c_str()));
     }
     else {
+        print_registrations();
+        cerr << "Name is: " << name << endl;
+        cerr << "Arguments :" << arguments << endl;
+
+        cerr << "FAIL" << endl;
 
     }
 }
@@ -169,7 +171,6 @@ void BinderReceiver::process_message(int fd, message *m) {
     switch (*((int *)(m->buf) + 1)) {
         case REGISTER:
             process_registration(fd, m);
-            //print_registrations();
             break;
         case LOC_REQUEST:
             process_request(fd, m);

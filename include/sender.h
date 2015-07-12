@@ -14,7 +14,7 @@ class NetworkSender {
     char remoteIP[INET6_ADDRSTRLEN];
 
 protected:
-    int send_message(message *m);
+    void send_message(message *m);
     message* receive_reply();
 
 public:

@@ -9,9 +9,10 @@
 
 #include "common_defs.h"
 
-// FIXME this seems waaaaaaay to low
-// better to be safe than sorry maybe?
-#define MAX_CONNECTIONS 100
+// As per piazza, this is 5 max
+// however, 5 simultaneous server and client connections
+// is 10 connections to the binder, so I went to 10 just in case
+#define MAX_CONNECTIONS 10
 
 struct message_assembly {
     // The current end of the buffer, where we write to

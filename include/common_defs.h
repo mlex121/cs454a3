@@ -75,15 +75,19 @@ enum ERRORS {
     //Binder
 
     //Server
-    BINDER_NOT_FOUND,
     REGISTRATION_AFTER_INITIALIZATION,
 
     //Client
+    NO_MATCHING_SERVERS,
+    FUNCTION_NOT_FOUND,
     EXECUTION_FAILURE,
 
     //Warnings start here
     PREVIOUSLY_INITIALIZED_NETWORK_HANDLERS = 1,
     PREVIOUSLY_REGISTERED_FUNCTION,
+
+    //Client
+    EXECUTION_WARNING,
 };
 
 unsigned int get_argtypes_len(const int *argTypes);

@@ -14,6 +14,8 @@ class ServerSender : NetworkSender {
     char receiver_hostname[MAX_HOSTNAME_LEN];
     char receiver_port[MAX_PORT_LEN];
 
+    static void *receive_termination(void *arg);
+
     public:
         ServerSender(char receiver_hostname[MAX_HOSTNAME_LEN], char receiver_port[MAX_PORT_LEN]);
         void rpcRegister(char *name, int *argTypes, skeleton f);

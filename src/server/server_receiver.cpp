@@ -8,14 +8,19 @@
 
 using namespace std;
 
+sem_t execute_request_read_avail;
+sem_t execute_request_write_avail;
+
+
 void ServerReceiver::extra_setup() {
-    sem_init(&execute_request_read_avail, 0, 0);
-    sem_init(&execute_request_write_avail, 0, 1);
 
     has_initialized = false;
 }
 
 void ServerReceiver::rpcInit() {
+    sem_init(&execute_request_read_avail, 0, 0);
+    sem_init(&execute_request_write_avail, 0, 1);
+
     has_initialized = true;
 
     // Spawn worker threads
@@ -55,11 +60,14 @@ void *ServerReceiver::process_execute(void *arg) {
     ServerReceiver *sr = (ServerReceiver *)arg;
 
     while(true)  {
-        sem_wait(&sr->execute_request_read_avail);
-
+        sem_wait(&execute_request_read_avail);
+        cerr << "PROC GOT SEM" << endl;
         execute_request e = sr->execute_requests.front();
         sr->execute_requests.pop_front();
-        sem_post(&sr->execute_request_write_avail);
+
+        sem_post(&execute_request_write_avail);
+
+        cerr << "Running" << endl;
 
         message *m = e.m;
         char name[MAX_FUNCTION_NAME_LEN];
@@ -87,7 +95,7 @@ void *ServerReceiver::process_execute(void *arg) {
 
             //cerr << "Arg_len is " << arg_len ;
             //cerr << " Argtype is: " << ARG_NAMES[get_argtype(*argTypes_iterator)];
-            cerr << endl;
+            //cerr << endl;
 
             offset += arg_len;
             
@@ -95,8 +103,8 @@ void *ServerReceiver::process_execute(void *arg) {
             argTypes_iterator++;
         }
 
-        cerr << "Name is " << name << endl;
-        cerr << "Arg Count is " << arg_count << endl;
+        //cerr << "Name is " << name << endl;
+        //cerr << "Arg Count is " << arg_count << endl;
 
         assert(offset == *((int *)m->buf));
 
@@ -121,12 +129,6 @@ void *ServerReceiver::process_execute(void *arg) {
         delete m->buf;
         delete[] args;
     }
-
-    pthread_exit(0);
-}
-
-void ServerReceiver::terminate() {
-    exit(1);
 }
 
 void ServerReceiver::process_message(int fd, message *m) {
@@ -136,10 +138,12 @@ void ServerReceiver::process_message(int fd, message *m) {
             e.fd = fd;
             e.m = m;
 
-
+            cerr << "Waiting on sem" << endl;
             sem_wait(&execute_request_write_avail);
+            cerr << "Got sem" << endl;
             execute_requests.push_back(e);
             sem_post(&execute_request_read_avail);
+            cerr << "Done sem" << endl;
 
             break;
         case TERMINATE:
@@ -147,7 +151,6 @@ void ServerReceiver::process_message(int fd, message *m) {
             // ignore this - we can't legitimately generate any such message
             break;
         default:
-            delete[] m->buf;
             break;
     }
 }

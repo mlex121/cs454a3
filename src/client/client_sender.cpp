@@ -45,6 +45,8 @@ void ClientSender::rpcCall(char *name, int *argTypes, void ** args) {
             offset += MAX_PORT_LEN;
 
             break;
+        case LOC_FAILURE:
+            throw FUNCTION_NOT_FOUND;
         default:
             cerr << "Message type is: " << *((int *)(location_reply_message->buf) + 1) << endl;
             throw UNRECOGNIZED_MESSAGE_TYPE;
@@ -98,10 +100,9 @@ void ClientSender::rpcCall(char *name, int *argTypes, void ** args) {
 
             break;
         case EXECUTE_FAILURE:
-            throw EXECUTION_FAILURE;
+            //FIXME more detail, depending on reasonCode
             break;
         default:
-            cerr << "Message type is: " << *((int *)(location_reply_message->buf) + 1) << endl;
             throw UNRECOGNIZED_MESSAGE_TYPE;
             break;
     }

@@ -1,17 +1,19 @@
 #!/bin/bash
 
-killall binder &> /dev/null
-killall server &> /dev/null
+#Long test
+./launch_script.sh ../bin/server 0.5 ../bin/client_long 1 ../bin/client 2 ../bin/client_terminator 3
 
-./binder > outfile &
+read
+tmux kill-window 
 
-# Pretty sure this is actually using the old outfile handle or soemthing similar
-for _ in {0..1}; do
-  read line;
-  export $(echo $line | sed 's/ /=/' ) ;
-done < outfile
+#Basic Test
+./launch_script.sh ../bin/server 0.5 ../bin/client 1
 
-#echo $SERVER_ADDRESS
-#echo $SERVER_PORT
+read
+tmux kill-window 
 
-./server
+#Basic Termination Test
+./launch_script.sh ../bin/server 0.5 ../bin/client_terminator 1
+
+read
+tmux kill-window 

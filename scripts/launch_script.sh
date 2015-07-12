@@ -6,10 +6,7 @@ if ! make; then
     exit 1
 fi
 
-
-tmux kill-window -t +1
 tmux new-window -t $SESSION:+1 -c ./bin
-
 tmux send-keys "./binder > outfile" Enter
 
 while [ "$1" ]; do
@@ -21,3 +18,4 @@ while [ "$1" ]; do
     shift
 done
 
+tmux select-layout even-horizontal

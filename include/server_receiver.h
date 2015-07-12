@@ -20,8 +20,8 @@ struct execute_request {
 class ServerReceiver : public NetworkReceiver {
     bool has_initialized;
 
-    sem_t execute_request_read_avail;
-    sem_t execute_request_write_avail;
+    //sem_t execute_request_read_avail;
+    //sem_t execute_request_write_avail;
 
     SkeletonLocations skeleton_locations;
 
@@ -36,7 +36,6 @@ class ServerReceiver : public NetworkReceiver {
     public:
         void add_skeleton(char *name, int *argTypes, skeleton f);
         void rpcInit();
-        void terminate();
 };
 
 #endif

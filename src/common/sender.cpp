@@ -64,15 +64,14 @@ NetworkSender::NetworkSender(char dest_hostname[MAX_HOSTNAME_LEN], char dest_por
     freeaddrinfo(servinfo);
 }
 
-int NetworkSender::send_message(message *m) {
+void NetworkSender::send_message(message *m) {
     int size = ((int *)m->buf)[0];
     int offset = 0;
     int ret;
 
     while (offset != size) {
         if ((ret = send(sock_fd, m->buf + offset, size - offset, 0)) == -1) {
-            perror("send");
-            return -1;
+            throw NETWORK_ERROR;
         }
 
         offset += ret;
@@ -81,8 +80,6 @@ int NetworkSender::send_message(message *m) {
     //Free the message
     delete[] m->buf;
     delete m;
-
-    return 0;
 }
 
 message* NetworkSender::receive_reply() {
@@ -112,9 +109,7 @@ message* NetworkSender::receive_reply() {
         }
     }
 
-    // TODO throw something
-    // size <= 0
+    throw NETWORK_ERROR;
     return NULL;
-
 }
 

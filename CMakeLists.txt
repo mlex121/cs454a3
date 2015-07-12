@@ -76,4 +76,9 @@ endmacro()
         test/client/client_terminator.c
     )
 
+    add_executable(
+        client_long
+        test/client/client_long.c
+    )
+
 # -----------------------------
