@@ -1,5 +1,17 @@
 #!/bin/bash
 
+#Cache Test
+./launch_script.sh ../bin/server 0.5 ../bin/client_cache 1
+
+read
+tmux kill-window 
+
+#Basic Test
+./launch_script.sh ../bin/server 0.5 ../bin/client 1
+
+read
+tmux kill-window 
+
 #Server Failure test
 ./launch_script.sh ../bin/server_error 0.5 
 read
@@ -22,11 +34,6 @@ tmux kill-window
 read
 tmux kill-window 
 
-#Basic Test
-./launch_script.sh ../bin/server 0.5 ../bin/client 1
-
-read
-tmux kill-window 
 
 #Basic Termination Test
 ./launch_script.sh ../bin/server 0.5 ../bin/client_terminator 1

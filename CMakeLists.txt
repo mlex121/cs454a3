@@ -111,4 +111,9 @@ endmacro()
         test/client/client_error.c
     )
 
+    add_executable(
+        client_cache
+        test/client/client_cache.c
+    )
+
 # -----------------------------
