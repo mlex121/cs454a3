@@ -108,7 +108,7 @@ void BinderReceiver::process_registration(int fd, message *m) {
             // database without sending a request to the binder
             assert(! function_locations[complete_function].count(server_location));
 
-            function_locations[complete_function].emplace(server_location);
+            function_locations[complete_function].insert(server_location);
     }
     else {
         function_locations[complete_function] = { server_location };
