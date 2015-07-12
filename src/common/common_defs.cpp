@@ -78,12 +78,9 @@ string get_argTypes_string(const int *argTypes) {
         if (*argTypes & ARG_INPUT_MASK) argTypes_string += ":i";
         if (*argTypes & ARG_OUTPUT_MASK) argTypes_string += ":o";
 
-        argTypes_string += ", ";
+        if (*(argTypes+1)) argTypes_string += ", ";
         argTypes++;
     }
-
-    argTypes_string.pop_back();
-    argTypes_string.pop_back();
 
     return argTypes_string;
 }
