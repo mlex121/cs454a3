@@ -61,6 +61,10 @@ int main(int argc, char *argv[]) {
     int duplicate = rpcRegister("f0", argTypes0, *f0_Skel);
     printf("Registration called with a duplicate function, received: %d\n", duplicate);
 
+    int non_duplicate = rpcRegister("f0", argTypes0, *f1_Skel);
+    printf("Registration called with a non_duplicate function, received: %d\n", non_duplicate);
+
+
     rpcRegister("f1", argTypes1, *f1_Skel);
     rpcRegister("f2", argTypes2, *f2_Skel);
     rpcRegister("f3", argTypes3, *f3_Skel);

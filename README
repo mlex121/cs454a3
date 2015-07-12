@@ -1,0 +1,29 @@
+Group userids and names:
+a7lim Alex Lim
+rklashar Ravindra Ashar-Bryant
+
+Design document is a3.pdf
+
+All directories are specified relative to the root directory
+
+===== Build Process =====
+We have used cmake as our build tool, along with an out of source build
+
+To compile, enter the ./build directory, and execute:
+
+cmake ..
+make
+
+This will create a ./bin directory, which contains:
+
+binder
+librpc.a
+
+There are a number of other binary files which will be created in this directory, but they can
+be safely ignored.
+
+Finally, the client and server can be compiled with:
+g++ -L. client.o -lrpc -o client
+g++ -L. server_functions.o server_function_skels.o server.o -lrpc -pthread -o server
+
+Observe that the server REQUIRES "-pthread" for the pthreads library

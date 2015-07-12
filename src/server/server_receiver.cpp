@@ -44,12 +44,22 @@ void ServerReceiver::add_skeleton(char *name, int *argTypes, skeleton f) {
 
     int count = skeleton_locations.count(c);
 
+    skeleton prev;
+
+    if (count) {
+        prev = skeleton_locations[c];
+    }
+
+
     // Set the location to our current function regardless
     skeleton_locations[c] = f;
 
     // If we had a previous function registered with identical arguments, throw a warning
-    if (count) {
+    if (count && ((int*)f == (int *)prev)) {
         throw  DUPLICATE_FUNCTION_REGISTRATION;
+    }
+    else if (count) {
+        throw FUNCTION_REREGISTRATION;
     }
 }
 
